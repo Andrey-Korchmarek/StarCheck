@@ -20,8 +20,12 @@ if __name__ == '__main__':
     ooo = Entity(model='sphere', color=color.cyan, scale=0.2)
     dots = tuple(set().union(board.vertexes, board.edges, board.faces))
     points = Entity(model=Mesh(vertices=dots, mode='point', thickness=.05), color=color.light_gray)
-    coords = board.generate_cell_pool(4) - {board.center}
-    cells = [Entity(model='sphere', color=color.light_gray, scale=board.r6, position=pos) for pos in coords]
+    coords = board.generate_cell_pool(5) - {board.center}
+    cells = [Entity(model='sphere', color=color.light_gray, scale=board.r6, collision=True, collider='sphere', position=pos) for pos in coords]
+    hit_info = [raycast(board.center, dir) for dir in dots]
+    for hit in hit_info:
+        if hit.entity:
+            hit.entity.color = color.red
     EditorCamera()
     app.run()
 
