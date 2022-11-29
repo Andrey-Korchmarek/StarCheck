@@ -7,8 +7,8 @@ class GameBoard(object):
         """Constructor"""
         center = (0, 0, 0)
         vertexes = set().union(*[list(permutations(elem)) for elem in [(0, u, d) for u in (1, -1) for d in (2, -2)]])
-        edges = set().union(*[list(permutations((0, u, d))) for u in (1.5, -1.5) for d in (1.5, -1.5)])\
-            .union(*[list(permutations((z, u, d))) for z in (0.5, -0.5) for u in (0.5, -0.5) for d in (2, -2)])
+        edges = set().union(*[list(permutations((0, u, d))) for u in (1.5, -1.5) for d in (1.5, -1.5)])
+        edges.update(*[list(permutations((z, u, d))) for z in (0.5, -0.5) for u in (0.5, -0.5) for d in (2, -2)])
         faces = set(product((1, -1), repeat=3)).union(*[set(permutations((i, 0, 0))) for i in (2, -2)])
         self.center = Vec3(center)
         self.vertexes = tuple(Vec3(dot) for dot in vertexes)
@@ -21,12 +21,21 @@ class GameBoard(object):
         self.r4 = 2
 
     def generate_cell_pool(self, finish):
-        start = {self.center}
-        previous = set()
+        result: set = set()
+        previous: set
+        next: set = set()
+        next.add(self.center)
+        for i in range(finish):
+            result.update(next)
+            previous = next.copy()
+            next.clear()
+            next.update(*[{pre + new*2 for new in self.faces} for pre in previous])
+            next.difference_update(result)
+        return result
 
 
 
 if __name__ == '__main__':
     print("This is not app!")
     board = GameBoard()
-    print(board.edges)
+    print(len(board.generate_cell_pool(3) - {board.center}))

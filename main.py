@@ -1,5 +1,6 @@
 from ursina.raycast import raycast
 from ursina import *
+from Сalculations import *
 
 # This is a sample Python script.
 
@@ -12,11 +13,19 @@ def print_hi(name):
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    app = Ursina()
-    #app.run()
     print_hi('PyCharm')
-    a = (1, 1, 1)
-    print(Vec3(a))
+    board = GameBoard()
+    app = Ursina()
+    window.fullscreen = True
+    ooo = Entity(model='sphere', color=color.cyan, scale=0.2)
+    dots = tuple(set().union(board.vertexes, board.edges, board.faces))
+    points = Entity(model=Mesh(vertices=dots, mode='point', thickness=.05), color=color.light_gray)
+    coords = board.generate_cell_pool(4) - {board.center}
+    cells = [Entity(model='sphere', color=color.light_gray, scale=board.r6, position=pos) for pos in coords]
+    EditorCamera()
+    app.run()
+
+
 
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
