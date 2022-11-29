@@ -33,9 +33,51 @@ class GameBoard(object):
             next.difference_update(result)
         return result
 
-
+class Figure(object):
+    def __init__(self):
+        king = {Vec3(-2, -6, -2), Vec3(2, 6, -2),
+                Vec3(0, -4, 8), Vec3(-6, 2, -2),
+                Vec3(0, -4, 0), Vec3(6, -2, 2),
+                Vec3(-4, 0, 0), Vec3(6, 2, -2),
+                Vec3(2, -2, 6), Vec3(2, 2, 6),
+                Vec3(4, 4, 0), Vec3(4, 0, 8),
+                Vec3(-8, -4, 0), Vec3(4, 0, -8),
+                Vec3(-2, 6, -2), Vec3(-4, 0, 4),
+                Vec3(-2, 2, -6), Vec3(8, -4, 0),
+                Vec3(2, -6, -2), Vec3(4, 0, 0),
+                Vec3(-2, -2, -6), Vec3(4, 0, 4),
+                Vec3(-4, 0, -8), Vec3(-4, 0, -4),
+                Vec3(-2, 6, 2), Vec3(2, -2, -6),
+                Vec3(0, 0, -4), Vec3(0, 8, -4),
+                Vec3(-6, -2, 2), Vec3(2, -2, -2),
+                Vec3(-8, 4, 0), Vec3(-2, 2, 2),
+                Vec3(-4, 4, 0), Vec3(-6, 2, 2),
+                Vec3(-2, -2, -2), Vec3(2, 2, -6),
+                Vec3(0, 4, -8), Vec3(-6, -2, -2),
+                Vec3(4, -4, 0), Vec3(4, 0, -4),
+                Vec3(-8, 0, 4), Vec3(6, -2, -2),
+                Vec3(6, 2, 2), Vec3(-4, -8, 0),
+                Vec3(8, 0, -4), Vec3(4, -8, 0),
+                Vec3(-2, -6, 2), Vec3(2, -6, 2),
+                Vec3(0, 4, 8), Vec3(8, 4, 0),
+                Vec3(-4, 0, 8), Vec3(0, 4, -4),
+                Vec3(8, 0, 4), Vec3(0, -8, 4),
+                Vec3(-2, 2, 6), Vec3(2, 6, 2),
+                Vec3(0, 0, 4), Vec3(-2, -2, 2),
+                Vec3(2, 2, -2), Vec3(0, -4, -8),
+                Vec3(0, 4, 0), Vec3(2, 2, 2),
+                Vec3(-4, 8, 0), Vec3(4, 8, 0),
+                Vec3(0, 8, 4), Vec3(-2, 2, -2),
+                Vec3(2, -2, 2), Vec3(0, 4, 4),
+                Vec3(0, -4, -4), Vec3(0, -8, -4),
+                Vec3(-4, -4, 0), Vec3(-8, 0, -4),
+                Vec3(0, -4, 4), Vec3(-2, -2, 6)}
+        self.king = tuple(king)
 
 if __name__ == '__main__':
     print("This is not app!")
-    board = GameBoard()
-    print(len(board.generate_cell_pool(3) - {board.center}))
+    piece = Figure()
+    print(len(piece.king))
+    print(14 + 36 + 24)
+    for k in piece.king:
+        print(k)

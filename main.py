@@ -21,11 +21,14 @@ if __name__ == '__main__':
     dots = tuple(set().union(board.vertexes, board.edges, board.faces))
     points = Entity(model=Mesh(vertices=dots, mode='point', thickness=.05), color=color.light_gray)
     coords = board.generate_cell_pool(5) - {board.center}
-    cells = [Entity(model='sphere', color=color.light_gray, scale=board.r6, collision=True, collider='sphere', position=pos) for pos in coords]
+    cells = [Entity(model='sphere', color=color.light_gray, scale=board.r6, visible=False, collision=True, collider='sphere', position=pos) for pos in coords]
     hit_info = [raycast(board.center, dir) for dir in dots]
+    king = set()
     for hit in hit_info:
         if hit.entity:
+            hit.entity.visible = True
             hit.entity.color = color.red
+            king.add(hit.entity.position)
     EditorCamera()
     app.run()
 
