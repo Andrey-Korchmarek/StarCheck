@@ -1,6 +1,7 @@
 from ursina.raycast import raycast
 from ursina import *
-from Сalculations import *
+#from Сalculations import *
+from GameBoard import *
 
 # This is a sample Python script.
 
@@ -14,21 +15,12 @@ def print_hi(name):
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     print_hi('PyCharm')
-    board = GameBoard()
+    board = GameBoard(7)
     app = Ursina()
     window.fullscreen = True
-    ooo = Entity(model='sphere', color=color.cyan, scale=0.2)
-    dots = tuple(set().union(board.vertexes, board.edges, board.faces))
-    points = Entity(model=Mesh(vertices=dots, mode='point', thickness=.05), color=color.light_gray)
-    coords = board.generate_cell_pool(5) - {board.center}
-    cells = [Entity(model='sphere', color=color.light_gray, scale=board.r6, visible=False, collision=True, collider='sphere', position=pos) for pos in coords]
-    hit_info = [raycast(board.center, dir) for dir in dots]
-    king = set()
-    for hit in hit_info:
-        if hit.entity:
-            hit.entity.visible = True
-            hit.entity.color = color.red
-            king.add(hit.entity.position)
+    def input(key):
+        if key == 'space':
+            board.changing_visibility()
     EditorCamera()
     app.run()
 
