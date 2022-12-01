@@ -15,16 +15,15 @@ def print_hi(name):
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     print_hi('PyCharm')
-    board = GameBoard(7)
+    board = GameBoard(3)
     app = Ursina()
     window.fullscreen = True
     def input(key):
         if key == 'space':
             board.changing_visibility()
+        if key == 'w':
+            board.show_core()
     EditorCamera()
     app.run()
-
-
-
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/

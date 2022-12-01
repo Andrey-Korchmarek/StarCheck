@@ -26,7 +26,7 @@ class GameBoard(object):
             return all([x >= 0.0 for x in normales])
         coordinates: set = set()
         previous: set
-        next: set = {constants['center']} if border > 0 else set()
+        next: set = {constants['center']} if border else set()
         while next:
             coordinates.update(next)
             previous = next.copy()
@@ -36,12 +36,26 @@ class GameBoard(object):
             next = {x for x in next if is_point_in_borders(x)}
         coordinates.remove(constants['center'])
         coordinates = list(coordinates)
-        self.cells = [Entity(model='models/Solid', visible=False, color=color.black)]
+        self.cells = [Entity(model='models/Solid', visible=False, color=color.black)] if border else list()
         color_calc = {0: color.gray, 2: color.red, 6: color.green, 4: color.blue}
         self.cells.extend([Entity(model='models/Cell', visible=False, position=pos, color=color_calc[sum(pos) % 8]) for pos in coordinates])
+        self.nuclei = [Entity(model='sphere', visible=False, scale=constants['r6'], collision=True, collider='sphere')] if border else list()
+        nuclei_extend = [Entity(model='sphere', visible=False, position=pos) for pos in coordinates]
+        for el in nuclei_extend:
+            el.scale = constants['r6']
+            el.collider = 'sphere'
+        self.nuclei.extend(nuclei_extend)
 
     def changing_visibility(self):
+        if not len(self.cells):
+            return
         new = not self.cells[0].visible
         for el in self.cells:
             el.visible = new
 
+    def show_core(self):
+        if not len(self.nuclei):
+            return
+        new = not self.nuclei[0].visible
+        for el in self.nuclei:
+            el.visible = new
