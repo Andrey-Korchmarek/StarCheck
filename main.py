@@ -15,14 +15,22 @@ def print_hi(name):
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     print_hi('PyCharm')
-    board = GameBoard(3)
+    board = GameBoard(5)
     app = Ursina()
     window.fullscreen = True
     def input(key):
         if key == 'space':
-            board.changing_visibility()
+            board.switch_cell_visibility()
         if key == 'w':
-            board.show_core()
+            board.switch_core_visibility()
+    vec = ((2, 0.5, 0.5), (2, -0.5, 0.5), (2, -0.5, -0.5), (2, 0.5, -0.5))
+    hit_info = [raycast((0, 0, 0), v) for v in vec]
+    for hit in hit_info:
+        if len(hit.entities):
+            for e in hit.entities:
+                e.visible = True
+                e.color = color.red
+                print(e.position)
     EditorCamera()
     app.run()
 
