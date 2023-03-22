@@ -47,3 +47,7 @@ class Game(Ursina):
 
 if __name__ == '__main__':
     print("This is not app!")
+    app = Ursina()
+    s = Entity(model=Circle(), texture='textures/stub', billboard=True)
+    EditorCamera()
+    app.run()
