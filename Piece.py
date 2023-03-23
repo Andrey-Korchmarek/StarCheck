@@ -1,9 +1,10 @@
 from ursina import *
 
 PieceType = int
-PIECE_TYPES = [WARRIOR, SOLDIER, FIGHTER, FAERIE, IMP, THOPTER, KNIGHT, MINE, SPUTNIK,
-               STORMING, SEEKER, HONORABLE, ATTACKING, MAD, MIRACULOUS, DEFENCE, MOBILE, SAGE] = range(1, 19)
-PIECE_SYMBOLS = [None, "A", "E", "F", "Y", "I", "V", "N", "M", "T", "H", "X", "W", "L", "Z", "G", "D", "O", "S"]
+PIECE_TYPES = [A, E, F, Y, I, V, N, M, T, H, X, W, L, Z, G, D, O, S] = range(1, 19)
+PIECE_SYMBOLS = [None, "a", "e", "f", "y", "i", "v", "n", "m", "t", "h", "x", "w", "l", "z", "g", "d", "o", "s"]
+PIECE_NAMES = [None, 'warrior', 'soldier', 'fighter', 'faerie', 'imp', 'thopter', 'knight', 'mine', 'sputnik',
+               'roar', 'rummage', 'lofty', 'onslaught', 'mad', 'magic', 'shielding', 'mercurial', 'sage']
 
 VECTORS = [
     (4, 0, 0), (0, 4, 0), (0, 0, 4), #square faces

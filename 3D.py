@@ -48,6 +48,6 @@ class Game(Ursina):
 if __name__ == '__main__':
     print("This is not app!")
     app = Ursina()
-    s = Entity(model=Circle(), texture='textures/stub', billboard=True)
+    s = Entity(model="sphere", position=(-2, -2, -2), texture='textures/stub', billboard=False)
     EditorCamera()
     app.run()
