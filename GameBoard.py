@@ -34,7 +34,7 @@ PIECE_TEXTURES = ["stub", "stub", "stub", "stub", "stub", "stub", "stub", "stub"
 
 class Unit(Entity):
     def __init__(self, piece: Piece):
-        self.form: PieceForm = self.piece_form(piece.form)
+        self.form: PieceForm = self.unit_form(piece.form)
         super().__init__(
             model = 'sphere',
             texture = 'textures/' + PIECE_TEXTURES[self.form],
@@ -45,7 +45,8 @@ class Unit(Entity):
             billboard = True,
         )
 
-    def piece_form(self, id) -> PieceForm:
+
+    def unit_form(self, id) -> PieceForm:
         if id in PIECE_FORMS:
             return id
         else:
@@ -85,6 +86,10 @@ class GameBoard(object):
         if len(pieces):
             for el in pieces:
                 self.units[Vec3(el.point)] = Unit(el)
+        for el in self.units.values():
+            el.on_click = self.switch_core_visibility
+        for el in self.nuclei.values():
+            el.on_click = lambda x = el.position: self.units[Vec3(2, 2, 2)].set_position(x)
 
     def _is_point_in_borders(self, point: Vec3):
         return all([x >= 0.0 for x in [sum(normal * point) + distance for normal, distance in self.borders]])
