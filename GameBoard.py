@@ -1,4 +1,5 @@
 from ursina import Vec3, Entity, color
+from ursina.sequence import *
 from collections import namedtuple
 from itertools import permutations, product
 from math import sqrt
@@ -82,14 +83,23 @@ class GameBoard(object):
         self.cells[self.constants["center"]].color = color.black
         self.nuclei = {coord: Nucleus(pos= coord) for coord in self.coordinates}
         self.nuclei[self.constants["center"]].collision = True
-        self.units = dict()
+        self.units = {coord: None for coord in self.coordinates}
+        self.selected: Unit = None
         if len(pieces):
             for el in pieces:
-                self.units[Vec3(el.point)] = Unit(el)
-        for el in self.units.values():
-            el.on_click = self.switch_core_visibility
+                new_unit = Unit(el)
+                new_unit.on_click = Sequence(self.select(new_unit), self.legal_move(self.selected))
+                self.units[Vec3(el.point)] = new_unit
         for el in self.nuclei.values():
-            el.on_click = lambda x = el.position: self.units[Vec3(2, 2, 2)].set_position(x)
+            prev = self.selected.position
+            next = el.position
+            el.on_click = Sequence()
+
+    def select(self, new: Unit) -> None:
+        self.selected = new
+
+    def legal_move(self, unit: Unit) -> None:
+        pass
 
     def _is_point_in_borders(self, point: Vec3):
         return all([x >= 0.0 for x in [sum(normal * point) + distance for normal, distance in self.borders]])
