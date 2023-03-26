@@ -1,11 +1,15 @@
 from ursina import *
+from collections import namedtuple
+import GameBoard
 
-PieceType = int
-PIECE_TYPES = [A, E, F, Y, I, V, N, M, T, H, X, W, L, Z, G, D, O, S] = range(1, 19)
-PIECE_SYMBOLS = [None, "a", "e", "f", "y", "i", "v", "n", "m", "t", "h", "x", "w", "l", "z", "g", "d", "o", "s"]
+Piece = namedtuple('Piece', 'point form', defaults = [None])
+PieceForm = int
+PIECE_FORMS = [A, E, F, Y, M, V, N, I, T, H, X, W, L, Z, G, D, O, S] = range(1, 19)
+PIECE_SYMBOLS = [None, "a", "e", "f", "y", "m", "v", "n", "i", "t", "h", "x", "w", "l", "z", "g", "d", "o", "s"]
 PIECE_NAMES = [None, 'warrior', 'soldier', 'fighter', 'faerie', 'imp', 'thopter', 'knight', 'mine', 'sputnik',
                'roar', 'rummage', 'lofty', 'onslaught', 'mad', 'magic', 'shielding', 'mercurial', 'sage']
-
+PIECE_TEXTURES = ["stub", "stub", "stub", "stub", "stub", "stub", "stub", "stub", "stub", "stub", "stub",
+                  "stub", "stub", "stub", "stub", "stub", "stub", "stub", "stub", "none"]
 VECTORS = [
     (4, 0, 0), (0, 4, 0), (0, 0, 4), #square faces
     (2, 2, 2), (2, 2, -2), (2, -2, 2), (-2, 2, 2), #hexagonal faces
@@ -19,27 +23,31 @@ VECTORS = [
     (4, 0, 8), (0, 4, 8), (-4, 0, 8), (0, -4, 8), #vertexes Z
     (6, 2, 2), (6, 2, -2), (6, -2, 2), (2, 6, 2), (2, 6, -2), (-2, 6, 2), (2, 2, 6), (2, -2, 6), (-2, 2, 6), #knight
 ]
-class Piece(Entity):
-    def __init__(self, begin = (2, 2, 2), code: str = 'stub', **kwargs):
-        """Constructor"""
-        super().__init__(**kwargs)
-        vectors = [
-               (4, 0, 0), (0, 4, 0), (0, 0, 4), #square faces
-               (2, 2, 2), (2, 2, -2), (2, -2, 2), (-2, 2, 2), #hexagonal faces
-               (4, 4, 0), (4, 0, 4), (0, 4, 4), #near hex-hex edges
-               (4, -4, 0), (-4, 0, 4), (0, 4, -4), #distant hex-hex edges
-               (16, 4, 4), (16, -4, 4), (16, -4, -4), (16, 4, -4), #square-hex edges X
-               (4, 16, 4), (-4, 16, 4), (-4, 16, -4), (4, 16, -4), #square-hex edges Y
-               (4, 4, 16), (4, -4, 16), (-4, -4, 16), (-4, 4, 16), #square-hex edges Z
-               (8, 4, 0), (8, 0, 4), (8, -4, 0), (8, 0, -4), #vertexes X
-               (0, 8, 4), (4, 8, 0), (0, 8, -4), (-4, 8, 0), #vertexes Y
-               (4, 0, 8), (0, 4, 8), (-4, 0, 8), (0, -4, 8), #vertexes Z
-        ]
-        codes = dict(S=1, O=1, D=1, H=1, X=1, W=1, L=1, Z=1, G=1, stub='stub')
-        self.position = begin
-        self.model = "sphere"
-        self.scale = 1.5
-        self.texture = 'textures/'.__add__(codes[code])
+class Unit(Entity):
+    def __init__(self, piece: Piece, board: GameBoard):
+        self.form: PieceForm = self.unit_form(piece.form)
+        self.board = board
+        super().__init__(
+            model='sphere',
+            texture='textures/' + PIECE_TEXTURES[self.form],
+            collision=True,
+            collider='sphere',
+            position=Vec3(piece.point),
+            scale=1.5,
+            billboard=True,
+        )
+
+    def unit_form(self, id) -> PieceForm:
+        if id in PIECE_FORMS:
+            return id
+        else:
+            id = id.__str__().lower()
+        if id in PIECE_SYMBOLS:
+            return PIECE_SYMBOLS[id]
+        elif id.__str__().lower() in PIECE_NAMES:
+            return PIECE_NAMES[id]
+        else:
+            return -1
 
     def change_position(self, new):
         pass
