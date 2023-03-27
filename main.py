@@ -35,8 +35,8 @@ class Game(object):
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     app = Ursina()
-    a = Piece((2, 2, 2), 1)
-    b = Piece((-2, -2, -2), 1)
+    a = Piece(True, (2, 2, 2), 1)
+    b = Piece(False, (-2, -2, -2), 1)
     board = GameBoard(3)
     window.fullscreen = True
     def input(key):

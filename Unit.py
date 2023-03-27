@@ -2,7 +2,11 @@ from ursina import *
 from collections import namedtuple
 import GameBoard
 
-Piece = namedtuple('Piece', 'point form', defaults = [None])
+Side = bool
+SIDE = [WHITE, BLACK] = [True, False]
+SIDE_NAMES = ["black", "white"]
+
+Piece = namedtuple('Piece', 'side point form', defaults = [None])
 PieceForm = int
 PIECE_FORMS = [A, E, F, Y, M, V, N, I, T, H, X, W, L, Z, G, D, O, S] = range(1, 19)
 PIECE_SYMBOLS = [None, "a", "e", "f", "y", "m", "v", "n", "i", "t", "h", "x", "w", "l", "z", "g", "d", "o", "s"]
@@ -10,6 +14,8 @@ PIECE_NAMES = [None, 'warrior', 'soldier', 'fighter', 'faerie', 'imp', 'thopter'
                'roar', 'rummage', 'lofty', 'onslaught', 'mad', 'magic', 'shielding', 'mercurial', 'sage']
 PIECE_TEXTURES = ["stub", "stub", "stub", "stub", "stub", "stub", "stub", "stub", "stub", "stub", "stub",
                   "stub", "stub", "stub", "stub", "stub", "stub", "stub", "stub", "none"]
+
+Legalmove = namedtuple("Legalmove", "source motion capture kill", defaults=[None, set(), set(), set()])
 VECTORS = [
     (4, 0, 0), (0, 4, 0), (0, 0, 4), #square faces
     (2, 2, 2), (2, 2, -2), (2, -2, 2), (-2, 2, 2), #hexagonal faces
@@ -25,6 +31,7 @@ VECTORS = [
 ]
 class Unit(Entity):
     def __init__(self, piece: Piece, board: GameBoard):
+        self.side = piece.side
         self.form: PieceForm = self.unit_form(piece.form)
         self.board = board
         super().__init__(
@@ -49,16 +56,18 @@ class Unit(Entity):
         else:
             return -1
 
-    def change_position(self, new):
+    def on_click(self):
+        #По клику на фигуру она становится выбранной и все её возможные ходы становятся видимыми
+        super().on_click()
         pass
 
-    def move(self):
+    def on_double_click(self):
+        # По двойному клику на фигуру её ест или убивает выбранная фигура, если они разного цвета
+        super().on_double_click()
         pass
 
-    def capture(self):
-        pass
-
-    def kill(self):
+    def legal_move_generator(self) -> Legalmove:
+        #Генерируется множества пустых клеток на которые можно пойти и врагов которых можно съесть или убить
         pass
 
 if __name__ == '__main__':

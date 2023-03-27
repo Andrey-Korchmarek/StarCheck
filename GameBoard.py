@@ -25,6 +25,7 @@ class Nucleus(Entity):
             )
 
     def on_double_click(self):
+        #По двойному клику на пустую клетку выбранная фигура перемещается на эту клетку
         super().on_double_click()
         self.board.walk(end = self.position)
 
@@ -40,7 +41,16 @@ class GameBoard(object):
         self.nuclei = {coord: Nucleus(coord, self) for coord in self.coordinates}
         self.nuclei[self.center].collision = True
         self.units = {coord: None for coord in self.coordinates}
-        self.selected = None
+        self.selected: Legalmove = None
+
+    def select(self, unit):
+        if None == self.selected.source:
+            self.move(prev = unit)
+        else:
+            if unit.side == self.selected.source.side:
+                self.move(prev = unit)
+            else:
+                self.move(new = unit)
 
     def move(self, prev = None, new = None):
         pass
