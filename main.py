@@ -42,8 +42,6 @@ if __name__ == '__main__':
     def input(key):
         if key == 'space':
             board.switch_cell_visibility()
-        if key == 'w':
-            board.switch_core_visibility()
 
     EditorCamera()
     app.run()

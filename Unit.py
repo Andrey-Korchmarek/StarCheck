@@ -1,22 +1,22 @@
 from ursina import *
 from collections import namedtuple
+from itertools import chain
 import GameBoard
 
 Side = bool
 SIDE = [WHITE, BLACK] = [True, False]
 SIDE_NAMES = ["black", "white"]
 
-Piece = namedtuple('Piece', 'side point form', defaults = [None])
+Piece = namedtuple('Piece', 'point form side', defaults = [None, WHITE])
 PieceForm = int
 PIECE_FORMS = [A, E, F, Y, M, V, N, I, T, H, X, W, L, Z, G, D, O, S] = range(1, 19)
 PIECE_SYMBOLS = [None, "a", "e", "f", "y", "m", "v", "n", "i", "t", "h", "x", "w", "l", "z", "g", "d", "o", "s"]
 PIECE_NAMES = [None, 'warrior', 'soldier', 'fighter', 'faerie', 'imp', 'thopter', 'knight', 'mine', 'sputnik',
                'roar', 'rummage', 'lofty', 'onslaught', 'mad', 'magic', 'shielding', 'mercurial', 'sage']
-PIECE_TEXTURES = ["stub", "stub", "stub", "stub", "stub", "stub", "stub", "stub", "stub", "stub", "stub",
-                  "stub", "stub", "stub", "stub", "stub", "stub", "stub", "stub", "none"]
+PIECE_TEXTURES = ["none",] + ["stub" for _ in range(1, 20)]
 
 Legalmove = namedtuple("Legalmove", "source motion capture kill", defaults=[None, set(), set(), set()])
-VECTORS = [
+VECTORS = list(chain.from_iterable([[Vec3(x), Vec3(x) * (-1)] for x in[
     (4, 0, 0), (0, 4, 0), (0, 0, 4), #square faces
     (2, 2, 2), (2, 2, -2), (2, -2, 2), (-2, 2, 2), #hexagonal faces
     (4, 4, 0), (4, 0, 4), (0, 4, 4), #near hex-hex edges
@@ -28,7 +28,32 @@ VECTORS = [
     (0, 8, 4), (4, 8, 0), (0, 8, -4), (-4, 8, 0), #vertexes Y
     (4, 0, 8), (0, 4, 8), (-4, 0, 8), (0, -4, 8), #vertexes Z
     (6, 2, 2), (6, 2, -2), (6, -2, 2), (2, 6, 2), (2, 6, -2), (-2, 6, 2), (2, 2, 6), (2, -2, 6), (-2, 2, 6), #knight
+]]))
+'00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'
+FORMS_WALK_VECTORS = [
+    '00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',#none
+    '10000000000000000000000000000000000000000000000010000000000000000000000000100000000000000000',#stub
+    '10000000000000000000000000000000000000000000000010000000000000000000000000100000000000000000',#stub
+    '10000000000000000000000000000000000000000000000010000000000000000000000000100000000000000000',#stub
+    '10000000000000000000000000000000000000000000000010000000000000000000000000100000000000000000',#stub
+    '10000000000000000000000000000000000000000000000010000000000000000000000000100000000000000000',#stub
+    '10000000000000000000000000000000000000000000000010000000000000000000000000100000000000000000',#stub
+    '10000000000000000000000000000000000000000000000010000000000000000000000000100000000000000000',#stub
+    '10000000000000000000000000000000000000000000000010000000000000000000000000100000000000000000',#stub
+    '10000000000000000000000000000000000000000000000010000000000000000000000000100000000000000000',#stub
+    '10000000000000000000000000000000000000000000000010000000000000000000000000100000000000000000',#stub
+    '10000000000000000000000000000000000000000000000010000000000000000000000000100000000000000000',#stub
+    '10000000000000000000000000000000000000000000000010000000000000000000000000100000000000000000',#stub
+    '10000000000000000000000000000000000000000000000010000000000000000000000000100000000000000000',#stub
+    '10000000000000000000000000000000000000000000000010000000000000000000000000100000000000000000',#stub
+    '10000000000000000000000000000000000000000000000010000000000000000000000000100000000000000000',#stub
+    '10000000000000000000000000000000000000000000000010000000000000000000000000100000000000000000',#stub
+    '10000000000000000000000000000000000000000000000010000000000000000000000000100000000000000000',#stub
+    '10000000000000000000000000000000000000000000000010000000000000000000000000100000000000000000',#stub
 ]
+FORMS_ATTACK_VECTORS = FORMS_WALK_VECTORS
+FORMS_DESTROY_VECTORS = FORMS_WALK_VECTORS
+
 class Unit(Entity):
     def __init__(self, piece: Piece, board: GameBoard):
         self.side = piece.side
@@ -45,30 +70,85 @@ class Unit(Entity):
         )
 
     def unit_form(self, id) -> PieceForm:
-        if id in PIECE_FORMS:
+        if 0 == id or None == id:
+            return 0
+        elif id in PIECE_FORMS:
             return id
         else:
             id = id.__str__().lower()
         if id in PIECE_SYMBOLS:
-            return PIECE_SYMBOLS[id]
-        elif id.__str__().lower() in PIECE_NAMES:
-            return PIECE_NAMES[id]
+            return PIECE_SYMBOLS.index(id)
+        elif id in PIECE_NAMES:
+            return PIECE_NAMES.index(id)
         else:
             return -1
 
     def on_click(self):
         #По клику на фигуру она становится выбранной и все её возможные ходы становятся видимыми
         super().on_click()
-        pass
+        self.board.move(prev = self.position)
 
     def on_double_click(self):
         # По двойному клику на фигуру её ест или убивает выбранная фигура, если они разного цвета
         super().on_double_click()
-        pass
+        if 0 != held_keys['left control']:
+            self.board.destroy(target = self.position)
+        else:
+            self.board.attack(capture = self.position)
+
+    def as_empty(self, walkset: set, vector: Vec3) -> bool:
+        point = self.position + vector
+        if 0 == self.board.what_is_there(point):
+            walkset.add(point)
+            return True
+        else:
+            return False
+
+    def to_enemy(self, enemyset: set, vector: Vec3):
+        point = self.position + vector
+        player = 1 if WHITE == self.side else 2
+        wit = self.board.what_is_there(point)
+        if None == wit:
+            return False
+        elif 0 == wit:
+            return True
+        elif wit == player:
+            return False
+        else:
+            enemyset.add(point)
+            return False
 
     def legal_move_generator(self) -> Legalmove:
         #Генерируется множества пустых клеток на которые можно пойти и врагов которых можно съесть или убить
-        pass
+        result = Legalmove(source = self)
+        for id, s in enumerate(FORMS_WALK_VECTORS[self.form]):
+            if '0' == s:
+                continue
+            elif '1' == s:
+                self.as_empty(result['W'], VECTORS[id])
+            elif 'I' == s:
+                count = 1
+                while self.as_empty(result['W'], VECTORS[id] * count):
+                    count += 1
+        for id, s in enumerate(FORMS_ATTACK_VECTORS[self.form]):
+            if '0' == s:
+                continue
+            elif '1' == s:
+                self.to_enemy(result['A'], VECTORS[id])
+            elif 'I' == s:
+                count = 1
+                while self.to_enemy(result['A'], VECTORS[id] * count):
+                    count += 1
+        for id, s in enumerate(FORMS_DESTROY_VECTORS[self.form]):
+            if '0' == s:
+                continue
+            elif '1' == s:
+                self.to_enemy(result['D'], VECTORS[id])
+            elif 'I' == s:
+                count = 1
+                while self.to_enemy(result['D'], VECTORS[id] * count):
+                    count += 1
+        return result
 
 if __name__ == '__main__':
     print("This is not app!")
