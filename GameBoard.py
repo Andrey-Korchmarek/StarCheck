@@ -1,7 +1,8 @@
-from Сalculations import *
+
 from Unit import *
-from ursina import Vec3, Entity, color
-from ursina.sequence import *
+from Сalculations import *
+from ursina import Entity, Vec3, color, sequence
+
 
 class Cell(Entity):
     def __init__(self, pos):
@@ -24,14 +25,10 @@ class Nucleus(Entity):
             position = pos,
             )
 
-    def on_double_click(self):
-        #По двойному клику на пустую клетку выбранная фигура перемещается на эту клетку
-        super().on_double_click()
-        self.board.walk(end = self)
-
 class GameBoard(object):
-    def __init__(self, size):
+    def __init__(self, size, pieces = []):
         """Constructor"""
+        from ursina import Vec3
         self.center = Vec3(0, 0, 0)
         self.borders = generate_borders(size)
         self.coordinates = generate_coordinates(self.borders)
@@ -39,13 +36,41 @@ class GameBoard(object):
         self.cells[self.center].model = 'models/Solid'
         self.cells[self.center].color = color.black
         self.nuclei = {coord: Nucleus(coord, self) for coord in self.coordinates}
+        for el in self.nuclei.values():
+            el.on_double_click = sequence.Func(self.walk, end = el)
         self.nuclei[self.center].collision = True
+        self.nuclei[self.center].on_double_click = todo_nothing
         self.units = {coord: None for coord in self.coordinates}
-        self.selected: Legalmove = None
-        self.catching_units = dict(WHITE = [], BLACK = [])
+        self.add_units(pieces)
+        for el in self.units.values():
+            if None != el:
+                el.on_click = sequence.Func(self.select, el)
+                el.on_double_click = sequence.Func(self.destroy, target = el) if 0 != held_keys['left control'] else sequence.Func(self.attack, capture = el)
+        self.selected: Legalmove = Legalmove(None)
+        self.catching_units = {1: [], 2: []}
+
+    def add_units(self, pieces):
+        try:
+            iterator = iter(pieces)
+        except TypeError:
+            print("The pieces is not iterable")
+        else:
+            next_element_exist = True
+            while next_element_exist:
+                try:
+                    element_from_iterator = next(iterator)
+                except StopIteration:
+                    next_element_exist = False
+                else:
+                    from Unit import Piece, Unit
+                    if type(element_from_iterator) == Piece:
+                        self.units[element_from_iterator.point] = Unit(element_from_iterator, self)
 
     def what_is_there(self, point: Vec3):
-        if any([x < 0.0 for x in [sum(norm * point) + d for norm, d in self.borders]]):
+        from Unit import Unit, WHITE, BLACK
+        if self.center == point:
+            return None
+        elif any([x < 0.0 for x in [sum(norm * point) + d for norm, d in self.borders]]):
             return None
         elif None == self.units[point]:
             return 0
@@ -59,15 +84,18 @@ class GameBoard(object):
             else:
                 return -1
 
-    def select(self, unit: Unit):
-        if None == self.selected and None != unit:
+    def select(self, unit):
+        if None == self.selected.source and None != unit:
             self.selected = unit.legal_move_generator()
             self.switch_select_visibility(True)
-        elif None == self.selected and None == unit:
+        elif None == self.selected.source and None == unit:
             pass
-        elif None != self.selected and None == unit:
+        elif None != self.selected.source and None == unit:
             self.switch_select_visibility(False)
-            self.selected = None
+            self.selected.motion.clear()
+            self.selected.capture.clear()
+            self.selected.kill.clear()
+            self.selected = Legalmove(None)
         else:
             if unit.side == self.selected.source.side:
                 self.switch_select_visibility(False)

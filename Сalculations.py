@@ -1,8 +1,12 @@
-from math import sqrt
+
 from ursina import Vec3
+from math import sqrt
 from itertools import permutations, product
 
 CONSTANTS = dict(a=sqrt(2), r6=sqrt(3), r4=2.0, p=1.5 * sqrt(2), R=sqrt(5), center=Vec3(0, 0, 0))
+
+def todo_nothing():
+    pass
 
 def generate_borders(size):
     if size <= 0:

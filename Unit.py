@@ -1,10 +1,11 @@
-from ursina import *
+
+from ursina import Entity, Vec3, held_keys
 from collections import namedtuple
 from itertools import chain
-import GameBoard
 
-Side = bool
-SIDE = [WHITE, BLACK] = [True, False]
+
+Side = int
+SIDE = [WHITE, BLACK] = [1, 2]
 SIDE_NAMES = ["black", "white"]
 
 Piece = namedtuple('Piece', 'point form side', defaults = [None, WHITE])
@@ -55,7 +56,7 @@ FORMS_ATTACK_VECTORS = FORMS_WALK_VECTORS
 FORMS_DESTROY_VECTORS = FORMS_WALK_VECTORS
 
 class Unit(Entity):
-    def __init__(self, piece: Piece, board: GameBoard):
+    def __init__(self, piece: Piece, board):
         self.side = piece.side
         self.form: PieceForm = self.unit_form(piece.form)
         self.board = board
@@ -82,19 +83,6 @@ class Unit(Entity):
             return PIECE_NAMES.index(id)
         else:
             return -1
-
-    def on_click(self):
-        #По клику на фигуру она становится выбранной и все её возможные ходы становятся видимыми
-        super().on_click()
-        self.board.move(prev = self.position)
-
-    def on_double_click(self):
-        # По двойному клику на фигуру её ест или убивает выбранная фигура, если они разного цвета
-        super().on_double_click()
-        if 0 != held_keys['left control']:
-            self.board.destroy(target = self.position)
-        else:
-            self.board.attack(capture = self.position)
 
     def as_empty(self, walkset: set, vector: Vec3) -> bool:
         point = self.position + vector
@@ -125,93 +113,30 @@ class Unit(Entity):
             if '0' == s:
                 continue
             elif '1' == s:
-                self.as_empty(result['W'], VECTORS[id])
+                self.as_empty(result.motion, VECTORS[id])
             elif 'I' == s:
                 count = 1
-                while self.as_empty(result['W'], VECTORS[id] * count):
+                while self.as_empty(result.motion, VECTORS[id] * count):
                     count += 1
         for id, s in enumerate(FORMS_ATTACK_VECTORS[self.form]):
             if '0' == s:
                 continue
             elif '1' == s:
-                self.to_enemy(result['A'], VECTORS[id])
+                self.to_enemy(result.capture, VECTORS[id])
             elif 'I' == s:
                 count = 1
-                while self.to_enemy(result['A'], VECTORS[id] * count):
+                while self.to_enemy(result.capture, VECTORS[id] * count):
                     count += 1
         for id, s in enumerate(FORMS_DESTROY_VECTORS[self.form]):
             if '0' == s:
                 continue
             elif '1' == s:
-                self.to_enemy(result['D'], VECTORS[id])
+                self.to_enemy(result.kill, VECTORS[id])
             elif 'I' == s:
                 count = 1
-                while self.to_enemy(result['D'], VECTORS[id] * count):
+                while self.to_enemy(result.kill, VECTORS[id] * count):
                     count += 1
         return result
 
 if __name__ == '__main__':
     print("This is not app!")
-    app = Ursina()
-    vectors = [
-        (4, 0, 0), (0, 4, 0), (0, 0, 4), #square faces
-        (2, 2, 2), (2, 2, -2), (2, -2, 2), (-2, 2, 2), #hexagonal faces
-        (4, 4, 0), (4, 0, 4), (0, 4, 4), #near hex-hex edges
-        (4, -4, 0), (-4, 0, 4), (0, 4, -4), #distant hex-hex edges
-        (16, 4, 4), (16, -4, 4), (16, -4, -4), (6, 4, -4), #square-hex edges X
-        (4, 16, 4), (-4, 16, 4), (-4, 16, -4), (4, 16, -4), #square-hex edges Y
-        (4, 4, 16), (4, -4, 16), (-4, -4, 16), (-4, 4, 16), #square-hex edges Z
-        (8, 4, 0), (8, 0, 4), (8, -4, 0), (8, 0, -4), #vertexes X
-        (0, 8, 4), (4, 8, 0), (0, 8, -4), (-4, 8, 0), #vertexes Y
-        (4, 0, 8), (0, 4, 8), (-4, 0, 8), (0, -4, 8), #vertexes Z
-        (6, 2, 2), (6, 2, -2), (6, -2, 2), (2, 6, 2), (2, 6, -2), (-2, 6, 2), (2, 2, 6), (2, -2, 6), (-2, 2, 6), #knight
-    ]
-    vectors = [Vec3(x) for x in vectors]
-    vectors2 = {f + e + v
-                for f in vectors[:7] + [-x for x in vectors[:7]]
-                for e in vectors[7:25] + [-x for x in vectors[7:25]]
-                for v in vectors[25:37] + [-x for x in vectors[25:37]]}
-    quin = set().union([x for x in vectors], [-x for x in vectors],
-                       [x * 2 for x in vectors], [(-x) * 2 for x in vectors],
-                       [x * 3 for x in vectors], [(-x) * 3 for x in vectors],
-                       [x * 4 for x in vectors], [(-x) * 4 for x in vectors])
-    vectors2.difference_update(quin)
-    vectors2 = list(vectors2)
-    vectors3 = [Vec3(0, 0, 0), ]
-    for vec in vectors2:
-        x, y, z = vec
-        x = int(x)
-        y = int(y)
-        z = int(z)
-        if (abs(x) % 4) == (abs(y) % 4) == (abs(z) % 4):
-            vectors3.append(vec)
-    color_calc = {0: color.gray, 2: color.red, 6: color.green, 4: color.blue}
-    turns = [Entity(model='models/Solid', visible=False, position=pos, color=color_calc[sum(pos) % 8]) for pos in vectors3]
-    y = turns[0]
-    turns = [x for x in turns if distance(x, y) < 7.0]
-    for i, x in enumerate(turns):
-        print(i, x.position, distance(x, y))
-    one_by_one = iter(turns)
-    result = list()
-    prev = next(one_by_one)
-    prev.visible = True
-    prev.color = color.black
-    def input(key):
-        global prev
-        global result
-        if key == 'space':
-            prev.color = color_calc[sum(prev.position) % 8]
-            prev = next(one_by_one)
-            prev.visible = True
-            prev.color = color.black
-        if key == 'd':
-            prev.visible = False
-        if key == 'p':
-            x, y, z = prev.position
-            result.append((int(x), int(y), int(z)))
-            prev.color = color.white
-            print(turns.index(prev), (int(x), int(y), int(z)))
-            print(result)
-
-    EditorCamera()
-    app.run()
