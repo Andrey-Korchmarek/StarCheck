@@ -18,6 +18,7 @@ class Nucleus(Entity):
     def __init__(self, pos, board):
         self.board = board
         super().__init__(
+            ignore_input = True,
             visible = False,
             model = 'sphere',
             collision = True,
@@ -45,7 +46,9 @@ class GameBoard(object):
         for el in self.units.values():
             if None != el:
                 el.on_click = sequence.Func(self.select, el)
-                el.on_double_click = sequence.Func(self.destroy, target = el) if 0 != held_keys['left control'] else sequence.Func(self.attack, capture = el)
+                attack = sequence.Func(self.attack, capture = el)
+                destroy = sequence.Func(self.destroy, target = el)
+                el.on_double_click = attack if 0 == held_keys['left control'] else destroy
         self.selected: Legalmove = Legalmove(None)
         self.catching_units = {1: [], 2: []}
 
@@ -112,7 +115,7 @@ class GameBoard(object):
             self.select(None)
         elif None != start and None == end:
             self.select(start)
-        elif None == start and None != end and None != self.selected:
+        elif None == start and None != end and None != self.selected.source:
             self.walk(self.selected.source, end)
         else:
             pass
@@ -144,6 +147,7 @@ class GameBoard(object):
     def switch_select_visibility(self, new: bool = False):
         for point in self.selected.motion:
             self.nuclei[point].visible = new
+            self.nuclei[point].ignore_input = not new
         for point in self.selected.capture:
             self.units[point].color = color.yellow if new else color.white
         for point in self.selected.kill:

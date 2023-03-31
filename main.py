@@ -6,8 +6,8 @@ from GameBoard import GameBoard
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     app = Ursina()
-    a = Piece((2, 2, 2), 1, 1)
-    b = Piece((-2, -2, -2), 1, 2)
+    a = Piece((2, 2, 2), 18, 1)
+    b = Piece((0, 8, 0), 18, 2)
     board = GameBoard(3, [a, b])
     window.fullscreen = True
     def input(key):
