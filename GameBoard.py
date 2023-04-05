@@ -15,8 +15,7 @@ class Cell(Entity):
             )
 
 class Nucleus(Entity):
-    def __init__(self, pos, board):
-        self.board = board
+    def __init__(self, pos):
         super().__init__(
             ignore_input = True,
             visible = False,
@@ -29,14 +28,13 @@ class Nucleus(Entity):
 class GameBoard(object):
     def __init__(self, size, pieces = []):
         """Constructor"""
-        from ursina import Vec3
         self.center = Vec3(0, 0, 0)
         self.borders = generate_borders(size)
-        self.coordinates = generate_coordinates(self.borders)
-        self.cells = {coord: Cell(pos= coord) for coord in self.coordinates}
+        self.coordinates = generate_coordinates(self.borders["limits"])
+        self.cells = {coord: Cell(coord) for coord in self.coordinates}
         self.cells[self.center].model = 'models/Solid'
         self.cells[self.center].color = color.black
-        self.nuclei = {coord: Nucleus(coord, self) for coord in self.coordinates}
+        self.nuclei = {coord: Nucleus(coord) for coord in self.coordinates}
         for el in self.nuclei.values():
             el.on_double_click = sequence.Func(self.walk, end = el)
         self.nuclei[self.center].collision = True
@@ -67,13 +65,13 @@ class GameBoard(object):
                 else:
                     from Unit import Piece, Unit
                     if type(element_from_iterator) == Piece:
-                        self.units[element_from_iterator.point] = Unit(element_from_iterator, self)
+                        self.units[element_from_iterator.point] = Unit(element_from_iterator)
 
     def what_is_there(self, point: Vec3):
         from Unit import Unit, WHITE, BLACK
         if self.center == point:
             return None
-        elif any([x < 0.0 for x in [sum(norm * point) + d for norm, d in self.borders]]):
+        elif any([x < 0.0 for x in [sum(norm * point) + l for norm, l in self.borders["limits"]]]):
             return None
         elif None == self.units[point]:
             return 0
