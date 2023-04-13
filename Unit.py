@@ -1,64 +1,14 @@
 
-from ursina import Entity, Vec3, held_keys
-from collections import namedtuple
-from itertools import chain
+from ursina import Entity, Vec3
+from __init__ import WHITE, BLACK, Piece, PieceForm, PIECE_TEXTURES, PIECE_FORMS, PIECE_SYMBOLS, PIECE_NAMES, Legalmove, VECTORS, FORMS_WALK_VECTORS, FORMS_ATTACK_VECTORS, FORMS_DESTROY_VECTORS
 
 
-Side = int
-SIDE = [WHITE, BLACK] = [1, 2]
-SIDE_NAMES = ["black", "white"]
-
-Piece = namedtuple('Piece', 'point form side', defaults = [None, WHITE])
-PieceForm = int
-PIECE_FORMS = [A, E, F, Y, M, V, N, I, T, H, X, W, L, Z, G, D, O, S] = range(1, 19)
-PIECE_SYMBOLS = [None, "a", "e", "f", "y", "m", "v", "n", "i", "t", "h", "x", "w", "l", "z", "g", "d", "o", "s"]
-PIECE_NAMES = [None, 'warrior', 'soldier', 'fighter', 'faerie', 'imp', 'thopter', 'knight', 'mine', 'sputnik',
-               'roar', 'rummage', 'lofty', 'onslaught', 'mad', 'magic', 'shielding', 'mercurial', 'sage']
-PIECE_TEXTURES = ["none",] + ["stub" for _ in range(1, 20)]
-
-Legalmove = namedtuple("Legalmove", "source motion capture kill", defaults=[None, set(), set(), set()])
-VECTORS = list(chain.from_iterable([[Vec3(x), Vec3(x) * (-1)] for x in[
-    (4, 0, 0), (0, 4, 0), (0, 0, 4), #square faces
-    (2, 2, 2), (2, 2, -2), (2, -2, 2), (-2, 2, 2), #hexagonal faces
-    (4, 4, 0), (4, 0, 4), (0, 4, 4), #near hex-hex edges
-    (4, -4, 0), (-4, 0, 4), (0, 4, -4), #distant hex-hex edges
-    (16, 4, 4), (16, -4, 4), (16, -4, -4), (16, 4, -4), #square-hex edges X
-    (4, 16, 4), (-4, 16, 4), (-4, 16, -4), (4, 16, -4), #square-hex edges Y
-    (4, 4, 16), (4, -4, 16), (-4, -4, 16), (-4, 4, 16), #square-hex edges Z
-    (8, 4, 0), (8, 0, 4), (8, -4, 0), (8, 0, -4), #vertexes X
-    (0, 8, 4), (4, 8, 0), (0, 8, -4), (-4, 8, 0), #vertexes Y
-    (4, 0, 8), (0, 4, 8), (-4, 0, 8), (0, -4, 8), #vertexes Z
-    (6, 2, 2), (6, 2, -2), (6, -2, 2), (2, 6, 2), (2, 6, -2), (-2, 6, 2), (2, 2, 6), (2, -2, 6), (-2, 2, 6), #knight
-]]))
-'00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'
-FORMS_WALK_VECTORS = [
-    ''.zfill(92),#none
-    '10000000000000000000000000000000000000000000000010000000000000000000000000100000000000000000',#stub
-    '10000000000000000000000000000000000000000000000010000000000000000000000000100000000000000000',#stub
-    '10000000000000000000000000000000000000000000000010000000000000000000000000100000000000000000',#stub
-    '10000000000000000000000000000000000000000000000010000000000000000000000000100000000000000000',#stub
-    '10000000000000000000000000000000000000000000000010000000000000000000000000100000000000000000',#stub
-    '10000000000000000000000000000000000000000000000010000000000000000000000000100000000000000000',#stub
-    '10000000000000000000000000000000000000000000000010000000000000000000000000100000000000000000',#stub
-    '10000000000000000000000000000000000000000000000010000000000000000000000000100000000000000000',#stub
-    '10000000000000000000000000000000000000000000000010000000000000000000000000100000000000000000',#stub
-    '10000000000000000000000000000000000000000000000010000000000000000000000000100000000000000000',#stub
-    '10000000000000000000000000000000000000000000000010000000000000000000000000100000000000000000',#stub
-    '10000000000000000000000000000000000000000000000010000000000000000000000000100000000000000000',#stub
-    '10000000000000000000000000000000000000000000000010000000000000000000000000100000000000000000',#stub
-    '10000000000000000000000000000000000000000000000010000000000000000000000000100000000000000000',#stub
-    '10000000000000000000000000000000000000000000000010000000000000000000000000100000000000000000',#stub
-    '10000000000000000000000000000000000000000000000010000000000000000000000000100000000000000000',#stub
-    '10000000000000000000000000000000000000000000000010000000000000000000000000100000000000000000',#stub
-    '11111111111111111111111111111111111111111111111111111111111111111111111111000000000000000000',#sage
-]
-FORMS_ATTACK_VECTORS = FORMS_WALK_VECTORS
-FORMS_DESTROY_VECTORS = FORMS_WALK_VECTORS
 
 class Unit(Entity):
-    def __init__(self, piece: Piece):
+    def __init__(self, piece: Piece, board):
         self.side = piece.side
         self.form: PieceForm = self.unit_form(piece.form)
+        self.board = board
         super().__init__(
             model='sphere',
             texture='textures/' + PIECE_TEXTURES[self.form],
@@ -66,7 +16,7 @@ class Unit(Entity):
             collider='sphere',
             position=Vec3(piece.point),
             scale=1.5,
-            billboard=True,
+            #billboard=True,
         )
 
     def unit_form(self, id) -> PieceForm:

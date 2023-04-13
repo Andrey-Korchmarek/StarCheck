@@ -1,5 +1,5 @@
 
-from Unit import *
+from Unit import Unit, Legalmove
 from Сalculations import *
 from ursina import Entity, Vec3, color, sequence
 
@@ -20,13 +20,14 @@ class Nucleus(Entity):
             ignore_input = True,
             visible = False,
             model = 'sphere',
+            color = color.gray,
             collision = True,
             collider = 'sphere',
             position = pos,
             )
 
 class GameBoard(object):
-    def __init__(self, size, pieces = []):
+    def __init__(self, size):
         """Constructor"""
         self.center = Vec3(0, 0, 0)
         self.borders = generate_borders(size)
@@ -37,9 +38,15 @@ class GameBoard(object):
         self.nuclei = {coord: Nucleus(coord) for coord in self.coordinates}
         for el in self.nuclei.values():
             el.on_double_click = sequence.Func(self.walk, end = el)
+            if all([x >= 0.0 for x in [sum(norm * el.position) + l for norm, l in self.borders["plus"]]]):
+                el.color = color.peach
+            if all([x >= 0.0 for x in [sum(norm * el.position) + l for norm, l in self.borders["minus"]]]):
+                el.color = color.cyan
+        self.nuclei[self.center].color = color.clear
         self.nuclei[self.center].collision = True
         self.nuclei[self.center].on_double_click = todo_nothing
         self.units = {coord: None for coord in self.coordinates}
+        """
         self.add_units(pieces)
         for el in self.units.values():
             if None != el:
@@ -47,8 +54,11 @@ class GameBoard(object):
                 attack = sequence.Func(self.attack, capture = el)
                 destroy = sequence.Func(self.destroy, target = el)
                 el.on_double_click = attack if 0 == held_keys['left control'] else destroy
+        """
         self.selected: Legalmove = Legalmove(None)
-        self.catching_units = {1: [], 2: []}
+        self.catching_units = dict()
+        self.catching_units[True] = []
+        self.catching_units[False] = []
 
     def add_units(self, pieces):
         try:
@@ -65,7 +75,7 @@ class GameBoard(object):
                 else:
                     from Unit import Piece, Unit
                     if type(element_from_iterator) == Piece:
-                        self.units[element_from_iterator.point] = Unit(element_from_iterator)
+                        self.units[element_from_iterator.point] = Unit(element_from_iterator, self)
 
     def what_is_there(self, point: Vec3):
         from Unit import Unit, WHITE, BLACK

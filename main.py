@@ -1,41 +1,57 @@
-import colorsys
-
 from ursina import *
-from Unit import Piece
+from __init__ import *
 from GameBoard import GameBoard
+from Player import Player
 
-# Press the green button in the gutter to run the script.
+class Game(Ursina):
+    def __init__(self, boardSize):
+        self.level: int = self.get_board_level(boardSize)
+        super().__init__(
+            fullscreen=True,
+        )
+        window.exit_button.visible = False
+        EditorCamera()
+        self.board = GameBoard(self.level)
+        self.P1 = Player(WHITE)
+        self.P2 = Player(BLACK)
+        self.board.add_units(self.P1.generate_units(self.level))
+        self.board.add_units(self.P2.generate_units(self.level))
+
+    def get_board_level(self, size) -> int:
+        if size < 1:
+            return 0
+        elif size < 7:
+            return int(size)
+        else:
+            return 7
+
+    def play(self):
+        gameOver = False
+        currentPlayer = self.P1
+        opponent = self.P2
+        while False == gameOver:
+            opponent.set_collider(False)
+            currentPlayer.set_collider(True)
+
+
+            gameOver = True
+        WindowPanel(
+            title='player WINN',
+            content=(
+                Button(text='Restart', color=color.green),
+                Button(text='Exit', color=color.red, on_click=application.quit),
+            ),
+        )
+    def input(self, key, is_raw=False):
+        super().input(key)
+        print(key)
+        if 'escape' == key:
+            application.quit()
+        if 'tab' == key:
+            self.board.switch_cell_visibility()
+        if 'space' == key:
+            self.play()
+
 if __name__ == '__main__':
-    app = Ursina()
-    border = Entity(model="models/Solid", visible=False, scale=1, alpha=0.8)
-    plus = Entity(model="models/Solid", color=color.red, position=Vec3(1, 1, 1) * border.scale * 4 / 3, scale=border.scale, alpha=0.5)
-    a = [Piece(point, 18, 1) for point in [(-8, 0, 0), (-8, 0, 4), (-8, 4, 0), (-8, 0, -4), (-8, -4, 0)]]
-    b = [Piece(point, 18, 2) for point in [(8, 0, 0), (8, 0, 4), (8, 4, 0), (8, 0, -4), (8, -4, 0)]]
-    board = GameBoard(1)
-    for el in board.nuclei.values():
-        if all([x >= 0.0 for x in [sum(norm * el.position) + l for norm, l in board.borders["plus"]]]):
-            el.color=color.gold
-    window.fullscreen = True
-    def input(key):
-        if key == 'space':
-            board.switch_cell_visibility()
-        if key == 'x':
-            board.switch_core_visibility()
-        if key == 'z':
-            border.visible = not border.visible
-        if key == 'm':
-            border.scale_x += 0.5
-            border.scale_y += 0.5
-            border.scale_z += 0.5
-            print(border.scale)
-            plus.scale = border.scale
-            plus.position = border.scale * 4 / 3
-        if key == 'n':
-            border.scale_x -= 0.5
-            border.scale_y -= 0.5
-            border.scale_z -= 0.5
-            plus.scale = border.scale
-            plus.position = border.scale * 4 / 3
-
-    EditorCamera()
+    app = Game(3)
     app.run()

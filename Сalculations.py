@@ -12,14 +12,12 @@ def mdl(vec: Vec3) -> float:
     return sqrt(vec.x * vec.x + vec.y * vec.y + vec.z * vec.z)
 
 def border_distance(layers: int) -> int:
-    if layers <= 0:
+    if 0 == layers:
         return 0
-    elif int(layers) == 1:
+    elif 1 == layers:
         return 1
-    elif int(layers) < 7:
-        return (int(layers) - 1) * 4
     else:
-        return 24
+        return (layers - 1) * 4
 
 def generate_borders(size):
     number_of_layers = border_distance(size)
