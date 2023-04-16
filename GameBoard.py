@@ -1,7 +1,8 @@
 
-from Unit import Unit, Legalmove
+from __init__ import *
+from Unit import Unit
 from Сalculations import *
-from ursina import Entity, Vec3, color, sequence
+from ursina import Entity, Vec3, color, sequence, held_keys, Func
 
 
 class Cell(Entity):
@@ -27,7 +28,7 @@ class Nucleus(Entity):
             )
 
 class GameBoard(object):
-    def __init__(self, size):
+    def __init__(self, size, start_new_turn, end):
         """Constructor"""
         self.center = Vec3(0, 0, 0)
         self.borders = generate_borders(size)
@@ -37,28 +38,26 @@ class GameBoard(object):
         self.cells[self.center].color = color.black
         self.nuclei = {coord: Nucleus(coord) for coord in self.coordinates}
         for el in self.nuclei.values():
-            el.on_double_click = sequence.Func(self.walk, end = el)
             if all([x >= 0.0 for x in [sum(norm * el.position) + l for norm, l in self.borders["plus"]]]):
                 el.color = color.peach
             if all([x >= 0.0 for x in [sum(norm * el.position) + l for norm, l in self.borders["minus"]]]):
                 el.color = color.cyan
-        self.nuclei[self.center].color = color.clear
+        self.nuclei[self.center].color = color.white
         self.nuclei[self.center].collision = True
         self.nuclei[self.center].on_double_click = todo_nothing
-        self.units = {coord: None for coord in self.coordinates}
-        """
-        self.add_units(pieces)
-        for el in self.units.values():
-            if None != el:
-                el.on_click = sequence.Func(self.select, el)
-                attack = sequence.Func(self.attack, capture = el)
-                destroy = sequence.Func(self.destroy, target = el)
-                el.on_double_click = attack if 0 == held_keys['left control'] else destroy
-        """
-        self.selected: Legalmove = Legalmove(None)
-        self.catching_units = dict()
-        self.catching_units[True] = []
-        self.catching_units[False] = []
+        self.unit_map = {coord: None for coord in self.coordinates}
+        self.units = {WHITE: [], BLACK: [], HOLE: []}
+        bh = Unit(Piece(), self.what_is_there)
+        bh.visible = False
+        bh.collider = None
+        self.unit_map[self.center] = bh
+        self.units[HOLE].append(bh)
+        self.selected: Unit = bh
+        self.highlighted = set()
+        self.legal_move: Legalmove = Legalmove()
+        self.next_turn = start_new_turn
+        self.catch = todo_nothing
+        self.game_over = end
 
     def add_units(self, pieces):
         try:
@@ -75,92 +74,111 @@ class GameBoard(object):
                 else:
                     from Unit import Piece, Unit
                     if type(element_from_iterator) == Piece:
-                        self.units[element_from_iterator.point] = Unit(element_from_iterator, self)
+                        new_unit = Unit(element_from_iterator, self.what_is_there)
+                        self.unit_map[new_unit.position] = new_unit
+                        self.units[new_unit.side].append(new_unit)
 
     def what_is_there(self, point: Vec3):
-        from Unit import Unit, WHITE, BLACK
         if self.center == point:
-            return None
+            return '-'
         elif any([x < 0.0 for x in [sum(norm * point) + l for norm, l in self.borders["limits"]]]):
-            return None
-        elif None == self.units[point]:
-            return 0
-        elif Unit != type(self.units[point]):
+            return '-'
+        elif None == self.unit_map[point]:
+            return '_'
+        elif Unit == type(self.unit_map[point]):
+            return self.unit_map[point].side
+        else:
             return -1
-        else:
-            if WHITE == self.units[point].side:
-                return 1
-            elif BLACK == self.units[point].side:
-                return 2
+
+    def clean_selection(self):
+        # Функция должна делать все клетки невидимыми а фигуры не подсвеченными
+        for el in self.highlighted:
+            if Unit == type(el):
+                el.color = color.white
+                el.on_double_click = todo_nothing
+            elif Nucleus == type(el):
+                el.visible = False
+                el.on_double_click = todo_nothing
             else:
-                return -1
+                pass#Errror
+        self.highlighted = set()
+        self.selected = self.units[HOLE]
+        self.legal_move = Legalmove()
 
-    def select(self, unit):
-        if None == self.selected.source and None != unit:
-            self.selected = unit.legal_move_generator()
-            self.switch_select_visibility(True)
-        elif None == self.selected.source and None == unit:
-            pass
-        elif None != self.selected.source and None == unit:
-            self.switch_select_visibility(False)
-            self.selected.motion.clear()
-            self.selected.capture.clear()
-            self.selected.kill.clear()
-            self.selected = Legalmove(None)
+    def select(self, unit: Unit):
+        if self.selected == unit:
+            return
         else:
-            if unit.side == self.selected.source.side:
-                self.switch_select_visibility(False)
-                self.selected = unit.legal_move_generator()
-                self.switch_select_visibility(True)
-            else:
-                pass
+            self.clean_selection()
+            self.selected = unit
+            self.legal_move = unit.legal_move_generator()
+            result = set()
+            for el in map(lambda x: self.nuclei[x], self.legal_move.motion):
+                result.add(el)
+                el.visible = True
+                el.on_double_click = Func(self.move, el)
+            for el in map(lambda x: self.unit_map[x], self.legal_move.capture & self.legal_move.kill):
+                result.add(el)
+                el.color = color.orange
+                el.on_double_click = Func(self.attack, el) if 0 == held_keys['left control'] else Func(self.destroy, el)
+            for el in map(lambda x: self.unit_map[x], self.legal_move.capture - self.legal_move.kill):
+                result.add(el)
+                el.color = color.yellow
+                el.on_double_click = Func(self.attack, el) if 0 == held_keys['left control'] else todo_nothing
+            for el in map(lambda x: self.unit_map[x], self.legal_move.kill - self.legal_move.capture):
+                result.add(el)
+                el.color = color.red
+                el.on_double_click = todo_nothing if 0 == held_keys['left control'] else Func(self.destroy, el)
+            self.highlighted = result
 
-    def walk(self, start: Unit = None, end: Nucleus = None):
-        if None != start and None != end:
-            self.units[end.position] = start
-            self.units[start.position] = None
-            start.set_position(end.position)
-            self.select(None)
-        elif None != start and None == end:
-            self.select(start)
-        elif None == start and None != end and None != self.selected.source:
-            self.walk(self.selected.source, end)
+    def set_units_action(self, active, waiting):
+        for el in self.units[active]:
+            el.on_click = Func(self.select, el)
+        for el in self.units[waiting]:
+            el.on_click = todo_nothing
+
+    def move(self, stop: Nucleus):
+        self.unit_map[self.selected.position] = None
+        self.unit_map[stop.position] = self.selected
+        self.selected.position = stop.position
+        self.clean_selection()
+        self.next_turn()
+
+    def attack(self, capture: Unit):
+        if S == capture.form:
+            self.clean_selection()
+            self.game_over()
         else:
-            pass
-
-    def attack(self, attacker: Unit = None, capture: Unit = None):
-        if None != attacker and None != capture and attacker.side != capture.side:
-            self.catching_units[attacker.side].append(capture.form)
-            self.units[capture.position] = None
-            self.units[capture.position] = attacker
-            self.units[attacker.position] = None
-            attacker.set_position(capture.position)
+            self.catch(capture.form)
+            self.unit_map[capture.position] = None
+            self.unit_map[capture.position] = self.selected
+            self.unit_map[self.selected.position] = None
+            self.selected.set_position(capture.position)
             capture.disable()
-            self.select(None)
-        elif None == attacker and None != capture and None != self.selected:
-            self.attack(attacker = self.selected.source, capture = capture)
-        else:
-            pass
+            self.clean_selection()
+            self.next_turn()
 
-    def destroy(self, gunner: Unit = None, target: Unit = None):
-        if None != gunner and None != target and gunner.side != target.side:
-            self.units[target.position] = None
-            target.disable()
-            self.select(None)
-        elif None != gunner and None != target and None != self.selected:
-            self.destroy(gunner = self.selected.source, target = target)
+
+    def destroy(self, target: Unit):
+        if S == target.form:
+            self.clean_selection()
+            self.game_over()
         else:
-            pass
+            self.unit_map[target.position] = None
+            target.disable()
+            self.clean_selection()
+            self.next_turn()
+
 
     def switch_select_visibility(self, new: bool = False):
         for point in self.selected.motion:
             self.nuclei[point].visible = new
             self.nuclei[point].ignore_input = not new
         for point in self.selected.capture:
-            self.units[point].color = color.yellow if new else color.white
+            self.unit_map[point].color = color.yellow if new else color.white
         for point in self.selected.kill:
-            prevcolor = self.units[point].color
-            self.units[point].color = (color.red if color.white == prevcolor else color.orange) if new else color.white
+            prevcolor = self.unit_map[point].color
+            self.unit_map[point].color = (color.red if color.white == prevcolor else color.orange) if new else color.white
 
     def switch_cell_visibility(self):
         new = not self.cells[self.center].visible

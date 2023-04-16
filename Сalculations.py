@@ -5,9 +5,6 @@ from itertools import permutations, product
 
 CONSTANTS = dict(a=sqrt(2), r6=sqrt(3), r4=2.0, p=1.5 * sqrt(2), R=sqrt(5), center=Vec3(0, 0, 0))
 
-def todo_nothing():
-    pass
-
 def mdl(vec: Vec3) -> float:
     return sqrt(vec.x * vec.x + vec.y * vec.y + vec.z * vec.z)
 

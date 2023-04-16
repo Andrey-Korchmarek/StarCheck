@@ -1,14 +1,87 @@
 
 from ursina import Entity, Vec3
-from __init__ import WHITE, BLACK, Piece, PieceForm, PIECE_TEXTURES, PIECE_FORMS, PIECE_SYMBOLS, PIECE_NAMES, Legalmove, VECTORS, FORMS_WALK_VECTORS, FORMS_ATTACK_VECTORS, FORMS_DESTROY_VECTORS
+from __init__ import *
 
+def _pieces_walk_mask(type: int):
+    masks = [
+        ''.zfill(92),#none
+        '1' * 92,  # stub ---- warrior
+        '1' * 92,  # stub ---- soldier
+        '1' * 92,  # stub ---- fighter
+        '1' * 92,  # stub ---- faerie
+        '1' * 92,  # stub ---- imp
+        '1' * 92,  # stub ---- thopter
+        '1' * 92,  # stub ---- knight
+        ''.zfill(92),# mine
+        '1' * 92,# stub ---- sputnik
+        'I' * 14 + ''.zfill(92 - 14),# roar
+        ''.zfill(14) + 'I' * (50 - 14) + ''.zfill(92 - 50),# rummage
+        ''.zfill(50) + 'I' * (74 - 50) + ''.zfill(92 - 74),# lofty
+        '0' * 74 + 'I' * 18, # onslaught
+        '1' * 92,  # stub ---- mad
+        '1' * 92,  # stub ---- magic
+        '1' * 92, #stub ----- shielding
+        'I' * 74 + ''.zfill(92 - 74),# mercurial
+        '1' * 74 + ''.zfill(92 - 74),# sage
+    ]
+    return masks[type]
 
+def _pieces_attack_mask(type: int):
+    masks = [
+        ''.zfill(92),#none
+        '1' * 92,  # stub ---- warrior
+        '1' * 92,  # stub ---- soldier
+        '1' * 92,  # stub ---- fighter
+        '1' * 92,  # stub ---- faerie
+        '1' * 92,  # stub ---- imp
+        '1' * 92,  # stub ---- thopter
+        '1' * 92,  # stub ---- knight
+        ''.zfill(92),# mine
+        '1' * 92,# stub ---- sputnik
+        'I' * 14 + ''.zfill(92 - 14),# roar
+        ''.zfill(14) + 'I' * (50 - 14) + ''.zfill(92 - 50),# rummage
+        ''.zfill(50) + 'I' * (74 - 50) + ''.zfill(92 - 74),# lofty
+        '0' * 74 + 'I' * 18, # onslaught
+        '1' * 92,  # stub ---- mad
+        '1' * 92,  # stub ---- magic
+        '1' * 92, #stub ----- shielding
+        'I' * 74 + ''.zfill(92 - 74),# mercurial
+        '1' * 74 + ''.zfill(92 - 74),# sage
+    ]
+    return masks[type]
+
+def _pieces_destroy_mask(type: int):
+    masks = [
+        ''.zfill(92),#none
+        '1' * 92,  # stub ---- warrior
+        '1' * 92,  # stub ---- soldier
+        '1' * 92,  # stub ---- fighter
+        '1' * 92,  # stub ---- faerie
+        '1' * 92,  # stub ---- imp
+        '1' * 92,  # stub ---- thopter
+        '1' * 92,  # stub ---- knight
+        '1' * 74 + ''.zfill(92 - 74),# mine
+        '1' * 92,# stub ---- sputnik
+        'I' * 14 + ''.zfill(92 - 14),# roar
+        ''.zfill(14) + 'I' * (50 - 14) + ''.zfill(92 - 50),# rummage
+        ''.zfill(50) + 'I' * (74 - 50) + ''.zfill(92 - 74),# lofty
+        '0' * 74 + 'I' * 18, # onslaught
+        '1' * 92,  # stub ---- mad
+        '1' * 92,  # stub ---- magic
+        '1' * 92, #stub ----- shielding
+        'I' * 74 + ''.zfill(92 - 74),# mercurial
+        '1' * 74 + ''.zfill(92 - 74),# sage
+    ]
+    return masks[type]
 
 class Unit(Entity):
-    def __init__(self, piece: Piece, board):
+    def __init__(self, piece: Piece, board_knowlege):
         self.side = piece.side
         self.form: PieceForm = self.unit_form(piece.form)
-        self.board = board
+        self.move_mask = _pieces_walk_mask(self.form)
+        self.capture_mask = _pieces_attack_mask(self.form)
+        self.kill_mask = _pieces_destroy_mask(self.form)
+        self.state_of_the_cell = board_knowlege
         super().__init__(
             model='sphere',
             texture='textures/' + PIECE_TEXTURES[self.form],
@@ -33,58 +106,44 @@ class Unit(Entity):
         else:
             return -1
 
-    def as_empty(self, walkset: set, vector: Vec3) -> bool:
-        point = self.position + vector
-        if 0 == self.board.what_is_there(point):
-            walkset.add(point)
-            return True
-        else:
-            return False
-
-    def to_enemy(self, enemyset: set, vector: Vec3):
-        point = self.position + vector
-        player = 1 if WHITE == self.side else 2
-        wit = self.board.what_is_there(point)
-        if None == wit:
-            return False
-        elif 0 == wit:
-            return True
-        elif wit == player:
-            return False
-        else:
-            enemyset.add(point)
-            return False
-
     def legal_move_generator(self) -> Legalmove:
         #Генерируется множества пустых клеток на которые можно пойти и врагов которых можно съесть или убить
-        result = Legalmove(source = self)
-        for id, s in enumerate(FORMS_WALK_VECTORS[self.form]):
-            if '0' == s:
+        result = Legalmove()
+        for vector1, sign1 in zip(VECTORS2[self.side], self.move_mask):
+            if '0' == sign1:
                 continue
-            elif '1' == s:
-                self.as_empty(result.motion, VECTORS[id])
-            elif 'I' == s:
+            elif '1' == sign1:
+                if '_' == self.state_of_the_cell(self.position + vector1):
+                    result.motion.add(self.position + vector1)
+            elif 'I' == sign1:
                 count = 1
-                while self.as_empty(result.motion, VECTORS[id] * count):
+                while '_' == self.state_of_the_cell(self.position + vector1 * count):
+                    result.motion.add(self.position + vector1 * count)
                     count += 1
-        for id, s in enumerate(FORMS_ATTACK_VECTORS[self.form]):
-            if '0' == s:
+        for vector2, sign2 in zip(VECTORS2[self.side], self.capture_mask):
+            if '0' == sign2:
                 continue
-            elif '1' == s:
-                self.to_enemy(result.capture, VECTORS[id])
-            elif 'I' == s:
+            elif '1' == sign2:
+                if self.side + self.state_of_the_cell(self.position + vector2) in ("♙♟︎", "♟︎♙"):
+                    result.capture.add(self.position + vector2)
+            elif 'I' == sign2:
                 count = 1
-                while self.to_enemy(result.capture, VECTORS[id] * count):
+                while '_' == self.state_of_the_cell(self.position + vector2 * count):
                     count += 1
-        for id, s in enumerate(FORMS_DESTROY_VECTORS[self.form]):
-            if '0' == s:
+                if self.side + self.state_of_the_cell(self.position + vector2 * count) in ("♙♟︎", "♟︎♙"):
+                    result.capture.add(self.position + vector2 * count)
+        for vector3, sign3 in zip(VECTORS2[self.side], self.kill_mask):
+            if '0' == sign3:
                 continue
-            elif '1' == s:
-                self.to_enemy(result.kill, VECTORS[id])
-            elif 'I' == s:
+            elif '1' == sign3:
+                if self.side + self.state_of_the_cell(self.position + vector3) in ("♙♟︎", "♟︎♙"):
+                    result.kill.add(self.position + vector3)
+            elif 'I' == sign3:
                 count = 1
-                while self.to_enemy(result.kill, VECTORS[id] * count):
+                while '_' == self.state_of_the_cell(self.position + vector3 * count):
                     count += 1
+                if self.side + self.state_of_the_cell(self.position + vector3 * count) in ("♙♟︎", "♟︎♙"):
+                    result.kill.add(self.position + vector3 * count)
         return result
 
 if __name__ == '__main__':
