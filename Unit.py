@@ -3,15 +3,16 @@ from ursina import Entity, Vec3
 from __init__ import *
 
 def _pieces_walk_mask(type: int):
+    pauns = "01010101010101010101000000010101010101010101010101010101010101010101010101010101010101010101"
     masks = [
         ''.zfill(92),#none
-        '1' * 92,  # stub ---- warrior
-        '1' * 92,  # stub ---- soldier
-        '1' * 92,  # stub ---- fighter
-        '1' * 92,  # stub ---- faerie
-        '1' * 92,  # stub ---- imp
-        '1' * 92,  # stub ---- thopter
-        '1' * 92,  # stub ---- knight
+        pauns[:14] + ''.zfill(92 - 14),# warrior
+        pauns[:14] + ''.zfill(92 - 14),# soldier
+        ''.zfill(14) + pauns[14:50] + ''.zfill(92 - 50),# fighter
+        ''.zfill(14) + pauns[14:50] + ''.zfill(92 - 50),# faerie
+        ''.zfill(50) + pauns[50:74] + ''.zfill(92 - 74),# imp
+        ''.zfill(50) + pauns[50:74] + ''.zfill(92 - 74),# thopter
+        ''.zfill(74) + pauns[74:],# knight
         ''.zfill(92),# mine
         '1' * 92,# stub ---- sputnik
         'I' * 14 + ''.zfill(92 - 14),# roar
@@ -27,15 +28,16 @@ def _pieces_walk_mask(type: int):
     return masks[type]
 
 def _pieces_attack_mask(type: int):
+    pauns = "01010101010101010101000000010101010101010101010101010101010101010101010101010101010101010101"
     masks = [
         ''.zfill(92),#none
-        '1' * 92,  # stub ---- warrior
-        '1' * 92,  # stub ---- soldier
-        '1' * 92,  # stub ---- fighter
-        '1' * 92,  # stub ---- faerie
-        '1' * 92,  # stub ---- imp
-        '1' * 92,  # stub ---- thopter
-        '1' * 92,  # stub ---- knight
+        ''.zfill(14) + pauns[14:50] + ''.zfill(92 - 50),# warrior
+        ''.zfill(50) + pauns[50:74] + ''.zfill(92 - 74),# soldier
+        ''.zfill(50) + pauns[50:74] + ''.zfill(92 - 74),# fighter
+        pauns[:14] + ''.zfill(92 - 14),# faerie
+        pauns[:14] + ''.zfill(92 - 14),# imp
+        ''.zfill(14) + pauns[14:50] + ''.zfill(92 - 50),# thopter
+        ''.zfill(74) + pauns[74:],# knight
         ''.zfill(92),# mine
         '1' * 92,# stub ---- sputnik
         'I' * 14 + ''.zfill(92 - 14),# roar
@@ -51,15 +53,16 @@ def _pieces_attack_mask(type: int):
     return masks[type]
 
 def _pieces_destroy_mask(type: int):
+    pauns = "01010101010101010101000000010101010101010101010101010101010101010101010101010101010101010101"
     masks = [
         ''.zfill(92),#none
-        '1' * 92,  # stub ---- warrior
-        '1' * 92,  # stub ---- soldier
-        '1' * 92,  # stub ---- fighter
-        '1' * 92,  # stub ---- faerie
-        '1' * 92,  # stub ---- imp
-        '1' * 92,  # stub ---- thopter
-        '1' * 92,  # stub ---- knight
+        ''.zfill(50) + pauns[50:74] + ''.zfill(92 - 74),# warrior
+        ''.zfill(14) + pauns[14:50] + ''.zfill(92 - 50),# soldier
+        pauns[:14] + ''.zfill(92 - 14),# fighter
+        ''.zfill(50) + pauns[50:74] + ''.zfill(92 - 74),# faerie
+        ''.zfill(14) + pauns[14:50] + ''.zfill(92 - 50),# imp
+        pauns[:14] + ''.zfill(92 - 14),# thopter
+        ''.zfill(74) + pauns[74:],# knight
         '1' * 74 + ''.zfill(92 - 74),# mine
         '1' * 92,# stub ---- sputnik
         'I' * 14 + ''.zfill(92 - 14),# roar
@@ -109,7 +112,7 @@ class Unit(Entity):
     def legal_move_generator(self) -> Legalmove:
         #Генерируется множества пустых клеток на которые можно пойти и врагов которых можно съесть или убить
         result = Legalmove()
-        for vector1, sign1 in zip(VECTORS2[self.side], self.move_mask):
+        for vector1, sign1 in zip(STEPS[self.side], self.move_mask):
             if '0' == sign1:
                 continue
             elif '1' == sign1:
@@ -120,7 +123,7 @@ class Unit(Entity):
                 while '_' == self.state_of_the_cell(self.position + vector1 * count):
                     result.motion.add(self.position + vector1 * count)
                     count += 1
-        for vector2, sign2 in zip(VECTORS2[self.side], self.capture_mask):
+        for vector2, sign2 in zip(STEPS[self.side], self.capture_mask):
             if '0' == sign2:
                 continue
             elif '1' == sign2:
@@ -132,7 +135,7 @@ class Unit(Entity):
                     count += 1
                 if self.side + self.state_of_the_cell(self.position + vector2 * count) in ("♙♟︎", "♟︎♙"):
                     result.capture.add(self.position + vector2 * count)
-        for vector3, sign3 in zip(VECTORS2[self.side], self.kill_mask):
+        for vector3, sign3 in zip(STEPS[self.side], self.kill_mask):
             if '0' == sign3:
                 continue
             elif '1' == sign3:

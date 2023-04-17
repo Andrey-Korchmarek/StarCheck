@@ -10,22 +10,37 @@ from Player import *
 
 
 if __name__ == '__main__':
-
-    """
     app = Ursina(fullscreen=True, borderless=True)
-    def test_func(item, x=None, y=None):
-        print(item, x, y)
-
-    test_func('test')
-    invoke(test_func, 'test', delay=.1)
-    invoke(test_func, 'test1', 1, 2, delay=.2)
-    invoke(test_func, 'test2', x=1, y=2, delay=.3)
+    center = Entity(position = (0,0,0), color = color.black, visible = True, ignore_input = True, model = 'sphere', collision = True, collider = 'sphere')
+    source = Entity(position = (4,4,4), color = color.peach, visible = True, ignore_input = True, model = 'sphere', collision = True, collider = 'sphere')
+    steps = [
+        (
+            Entity(position=source.position + Vec3(x), color=color.white, visible=True, ignore_input=True, model='sphere', collision=True, collider='sphere'),
+            Entity(position=source.position - Vec3(x), color=color.white, visible=True, ignore_input=True, model='sphere', collision=True, collider='sphere'),
+        )
+        for x in VECTORS
+    ]
+    pauns = ''
+    anomales = []
+    for pl, mn in steps:
+        if distance(pl, center) < distance(mn, center):
+            pauns += '10'
+        elif distance(pl, center) > distance(mn, center):
+            pauns += '01'
+        else:
+            pauns += '!!'
+            anomales.append(pl)
+            anomales.append(mn)
+    print(len(pauns))
+    print('pauns = "',pauns, '"')
+    for el in anomales:
+        el.color = color.red
+        print(el.position - source.position)
     def input(key):
+        global count
         if key == 'space':
-            print_on_screen('debug message', position=(0, 0), origin=(0, 0), scale=2)
-            invoke(test_func, 'test2', x=1, y=2, delay=.3)
+            pass
         if key == 'escape':
             application.quit()
     EditorCamera()
     app.run()
-    """

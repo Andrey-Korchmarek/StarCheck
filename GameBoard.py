@@ -48,7 +48,8 @@ class GameBoard(object):
         self.unit_map = {coord: None for coord in self.coordinates}
         self.units = {WHITE: [], BLACK: [], HOLE: []}
         bh = Unit(Piece(), self.what_is_there)
-        bh.visible = False
+        bh.color = color.black
+        bh.scale = sqrt(3)
         bh.collider = None
         self.unit_map[self.center] = bh
         self.units[HOLE].append(bh)
@@ -75,6 +76,10 @@ class GameBoard(object):
                     from Unit import Piece, Unit
                     if type(element_from_iterator) == Piece:
                         new_unit = Unit(element_from_iterator, self.what_is_there)
+                        if new_unit.side == BLACK:
+                            new_unit.rotate((180, 90, 0))
+                        else:
+                            pass
                         self.unit_map[new_unit.position] = new_unit
                         self.units[new_unit.side].append(new_unit)
 

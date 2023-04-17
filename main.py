@@ -53,7 +53,7 @@ class Game(object):
 
 if __name__ == '__main__':
     app = Ursina()
-    #window.fullscreen = True
+    window.fullscreen = True
     window.exit_button.visible = False
     EditorCamera()
     #Sky(texture="textures/sky")
