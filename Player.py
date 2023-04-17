@@ -1,6 +1,5 @@
-from ursina import Button, Text, color, WindowPanel, Sequence, Func, ButtonGroup
-from itertools import chain
-from __init__ import PIECE_NAMES, Piece, PIECE_SYMBOLS, WHITE
+from ursina import Button, color, Func
+from __init__ import PIECE_SYMBOLS, WHITE
 
 
 class _Catched(object):

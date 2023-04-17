@@ -2,7 +2,7 @@
 from __init__ import *
 from Unit import Unit
 from Сalculations import *
-from ursina import Entity, Vec3, color, sequence, held_keys, Func
+from ursina import Entity, Vec3, color, held_keys, Func
 
 
 class Cell(Entity):
@@ -46,13 +46,12 @@ class GameBoard(object):
         self.nuclei[self.center].collision = True
         self.nuclei[self.center].on_double_click = todo_nothing
         self.unit_map = {coord: None for coord in self.coordinates}
-        self.units = {WHITE: [], BLACK: [], HOLE: []}
         bh = Unit(Piece(), self.what_is_there)
         bh.color = color.black
         bh.scale = sqrt(3)
         bh.collider = None
         self.unit_map[self.center] = bh
-        self.units[HOLE].append(bh)
+        self.units = {WHITE: [], BLACK: [], HOLE: bh}
         self.selected: Unit = bh
         self.highlighted = set()
         self.legal_move: Legalmove = Legalmove()
@@ -76,10 +75,12 @@ class GameBoard(object):
                     from Unit import Piece, Unit
                     if type(element_from_iterator) == Piece:
                         new_unit = Unit(element_from_iterator, self.what_is_there)
-                        if new_unit.side == BLACK:
-                            new_unit.rotate((180, 90, 0))
+                        if new_unit.side == WHITE:
+                            new_unit.rotate((-30, 45, 0))
+                        elif new_unit.side == BLACK:
+                            new_unit.rotate((30, -135, 180))
                         else:
-                            pass
+                            pass # Error
                         self.unit_map[new_unit.position] = new_unit
                         self.units[new_unit.side].append(new_unit)
 
@@ -97,6 +98,8 @@ class GameBoard(object):
 
     def clean_selection(self):
         # Функция должна делать все клетки невидимыми а фигуры не подсвеченными
+        if self.selected.side == HOLE:
+            return
         for el in self.highlighted:
             if Unit == type(el):
                 el.color = color.white
@@ -107,6 +110,7 @@ class GameBoard(object):
             else:
                 pass#Errror
         self.highlighted = set()
+        self.selected.color = color.white
         self.selected = self.units[HOLE]
         self.legal_move = Legalmove()
 
@@ -116,6 +120,7 @@ class GameBoard(object):
         else:
             self.clean_selection()
             self.selected = unit
+            self.selected.color = color.green
             self.legal_move = unit.legal_move_generator()
             result = set()
             for el in map(lambda x: self.nuclei[x], self.legal_move.motion):
@@ -125,15 +130,15 @@ class GameBoard(object):
             for el in map(lambda x: self.unit_map[x], self.legal_move.capture & self.legal_move.kill):
                 result.add(el)
                 el.color = color.orange
-                el.on_double_click = Func(self.attack, el) if 0 == held_keys['left control'] else Func(self.destroy, el)
+                el.on_double_click = Func(self.attack, el) if 0 == held_keys['a'] else Func(self.destroy, el)
             for el in map(lambda x: self.unit_map[x], self.legal_move.capture - self.legal_move.kill):
                 result.add(el)
                 el.color = color.yellow
-                el.on_double_click = Func(self.attack, el) if 0 == held_keys['left control'] else todo_nothing
+                el.on_double_click = Func(self.attack, el) if 0 == held_keys['a'] else todo_nothing
             for el in map(lambda x: self.unit_map[x], self.legal_move.kill - self.legal_move.capture):
                 result.add(el)
                 el.color = color.red
-                el.on_double_click = todo_nothing if 0 == held_keys['left control'] else Func(self.destroy, el)
+                el.on_double_click = todo_nothing if 0 == held_keys['a'] else Func(self.destroy, el)
             self.highlighted = result
 
     def set_units_action(self, active, waiting):

@@ -11,35 +11,44 @@ from Player import *
 
 if __name__ == '__main__':
     app = Ursina(fullscreen=True, borderless=True)
-    center = Entity(position = (0,0,0), color = color.black, visible = True, ignore_input = True, model = 'sphere', collision = True, collider = 'sphere')
-    source = Entity(position = (4,4,4), color = color.peach, visible = True, ignore_input = True, model = 'sphere', collision = True, collider = 'sphere')
-    steps = [
-        (
-            Entity(position=source.position + Vec3(x), color=color.white, visible=True, ignore_input=True, model='sphere', collision=True, collider='sphere'),
-            Entity(position=source.position - Vec3(x), color=color.white, visible=True, ignore_input=True, model='sphere', collision=True, collider='sphere'),
+    plus = Entity(
+            model='sphere',
+            texture='textures/' + "A+X_398x192.png",
+            collision=True,
+            collider='sphere',
+            position=Vec3(2, 2, 2),
+            scale=1.5,
+            #billboard=True,
         )
-        for x in VECTORS
-    ]
-    pauns = ''
-    anomales = []
-    for pl, mn in steps:
-        if distance(pl, center) < distance(mn, center):
-            pauns += '10'
-        elif distance(pl, center) > distance(mn, center):
-            pauns += '01'
-        else:
-            pauns += '!!'
-            anomales.append(pl)
-            anomales.append(mn)
-    print(len(pauns))
-    print('pauns = "',pauns, '"')
-    for el in anomales:
-        el.color = color.red
-        print(el.position - source.position)
+    minus = Entity(
+            model='sphere',
+            texture='textures/' + "A+X_398x192.png",
+            collision=True,
+            collider='sphere',
+            position=Vec3(-2, -2, -2),
+            scale=1.5,
+            #billboard=True,
+        )
+    center = Entity(model="models/custom_cube.obj", texture="textures/rubik_texture.png")
+    plus.rotate((-30, 45, 0))
+    minus.rotate((30, -135, 180))
+    count = Vec3(0,0,0)
     def input(key):
+
         global count
+        i = 15
+        if key == 'x':
+            minus.rotate((0, i, 0))
+            count.y += i
+            print(count)
+        if key == 'c':
+            minus.rotate((0, 0, i))
+            count.z += i
+            print(count)
         if key == 'space':
-            pass
+            print(held_keys['z'])
+        if key == 'left control':
+            print(held_keys['spase'])
         if key == 'escape':
             application.quit()
     EditorCamera()

@@ -1,5 +1,4 @@
-
-from ursina import Entity, Vec3
+from ursina import Entity
 from __init__ import *
 
 def _pieces_walk_mask(type: int):

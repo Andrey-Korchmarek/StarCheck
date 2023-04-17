@@ -8,7 +8,6 @@ class Game(object):
         self.level: int = self.get_board_level(boardSize)
         self.preparation()
 
-
     def get_board_level(self, size) -> int:
         if size < 1:
             return 0
@@ -30,7 +29,6 @@ class Game(object):
         self.board.catch = self.active.add_capture
         self.board.set_units_action(self.active.side, self.waiting.side)
 
-
     def play(self):
         print_on_screen('NEW TURN', position=(0, 0), origin=(0, 0), scale=8, duration=3)
         self.active.set_collider(False)
@@ -38,7 +36,6 @@ class Game(object):
         self.board.set_units_action(self.active.side, self.waiting.side)
         self.active.set_collider(True)
         self.board.catch = self.active.add_capture
-
 
     def end_of_game(self):
         WindowPanel(
@@ -48,8 +45,6 @@ class Game(object):
                 Button(text='Exit', color=color.red, on_click=application.quit),
             ),
         )
-
-
 
 if __name__ == '__main__':
     app = Ursina()
