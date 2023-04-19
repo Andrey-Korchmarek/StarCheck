@@ -6,11 +6,16 @@ SIDE = [WHITE, BLACK, HOLE] = ['♙' ,'♟︎', '●']
 SIDE_NAMES = ["black", "white"]
 
 PieceForm = int
-PIECE_FORMS = [A, E, F, Y, M, V, N, I, T, H, X, W, L, Z, G, D, O, S] = range(1, 19)
+PIECE_FORMS = [A, # Первая из 6 видов пешек - фигур, чей ход отличатся для передвижения, захвата и выстрела,
+               # а ходят они только на 1 хлетку и только вперёд.
+               # Передвигается ортогонально, захватывает диагонально, стреляет триагонально
+               E, # Пешка №2, передвигается ортогонально, захватывает триагонально, стреляет диагонально
+               F, # Пешка №3, передвигается диагонально, захватывает триагонально, стреляет ортогонально
+               Y, M, V, N, I, T, H, X, W, L, Z, G, D, O, S] = range(1, 19)
 PIECE_SYMBOLS = [None, "a", "e", "f", "y", "m", "v", "n", "i", "t", "h", "x", "w", "l", "z", "g", "d", "o", "s"]
 PIECE_NAMES = [None, 'warrior', 'soldier', 'fighter', 'faerie', 'imp', 'thopter', 'knight', 'mine', 'sputnik',
                'roar', 'rummage', 'lofty', 'onslaught', 'mad', 'magic', 'shielding', 'mercurial', 'sage']
-PIECE_TEXTURES = ["none",] + ["stub" for _ in range(1, 17)] + ["vertical", "target"]
+PIECE_TEXTURES = ["none", "ladybug"] + ["stub" for _ in range(2, 16)] + ["shield", "vertical", "target"]
 
 VECTORS = [
     (4, 0, 0), (0, 4, 0), (0, 0, 4), #square faces

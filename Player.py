@@ -80,7 +80,7 @@ class Player(object):
                         Piece((8, 4, 0), 3, self.side), Piece((4, 8, 0), 2, self.side), Piece((0, 8, 4), 1, self.side),
                         ]
             else:
-                return [Piece((-4, -4, -4), 18, self.side), Piece((-2, -2, -2), 17, self.side),
+                return [Piece((-4, -4, -4), 18, self.side), Piece((-2, -2, -2), 16, self.side),
                         Piece((-4, -4, 0), 12, self.side), Piece((-4, 0, -4), 11, self.side), Piece((0, -4, -4), 10, self.side),
                         Piece((-4, 0, -8), 6, self.side), Piece((0, -4, -8), 5, self.side), Piece((-8, 0, -4), 4, self.side),
                         Piece((-8, -4, 0), 3, self.side), Piece((-4, -8, 0), 2, self.side), Piece((0, -8, -4), 1, self.side),]

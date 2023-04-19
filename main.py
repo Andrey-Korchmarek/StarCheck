@@ -38,13 +38,14 @@ class Game(object):
         self.board.catch = self.active.add_capture
 
     def end_of_game(self):
-        WindowPanel(
+        endgame = WindowPanel(
             title='player WINN',
             content=(
-                Button(text='Restart', color=color.green, on_click=Sequence(scene.clear(), self.preparation())),
+                Button(text='Restart', color=color.green),
                 Button(text='Exit', color=color.red, on_click=application.quit),
             ),
         )
+        endgame.content[0].on_click=Sequence(endgame.disable, scene.clear, self.preparation)
 
 if __name__ == '__main__':
     app = Ursina()
