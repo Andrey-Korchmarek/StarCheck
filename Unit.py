@@ -7,22 +7,22 @@ def _pieces_walk_mask(type: int):
         ''.zfill(92),#none
         pauns[:14] + ''.zfill(92 - 14),# warrior
         pauns[:14] + ''.zfill(92 - 14),# soldier
-        ''.zfill(14) + pauns[14:50] + ''.zfill(92 - 50),# fighter
-        ''.zfill(14) + pauns[14:50] + ''.zfill(92 - 50),# faerie
+        ''.zfill(14) + ''.zfill(25 - 14) + pauns[24:50] + ''.zfill(92 - 50),# fighter
+        ''.zfill(14) + ''.zfill(25 - 14) + pauns[24:50] + ''.zfill(92 - 50),# faerie
         ''.zfill(50) + pauns[50:74] + ''.zfill(92 - 74),# imp
         ''.zfill(50) + pauns[50:74] + ''.zfill(92 - 74),# thopter
         ''.zfill(74) + pauns[74:],# knight
         ''.zfill(92),# mine
-        '1' * 92,# stub ---- sputnik
+        '1' * 14 + ''.zfill(25 - 14) + '1' * (92 - 25),# stub ---- sputnik
         'I' * 14 + ''.zfill(92 - 14),# roar
-        ''.zfill(14) + 'I' * (50 - 14) + ''.zfill(92 - 50),# rummage
+        ''.zfill(14) + ''.zfill(25 - 14) + 'I' * (50 - 25) + ''.zfill(92 - 50),# rummage
         ''.zfill(50) + 'I' * (74 - 50) + ''.zfill(92 - 74),# lofty
         '0' * 74 + 'I' * 18, # onslaught
-        '1' * 92,  # stub ---- mad
-        '1' * 92,  # stub ---- magic
-        '1' * 92, #stub ----- shielding
-        'I' * 74 + ''.zfill(92 - 74),# mercurial
-        '1' * 74 + ''.zfill(92 - 74),# sage
+        '1' * 14 + ''.zfill(25 - 14) + '1' * (92 - 25),  # stub ---- mad
+        '1' * 14 + ''.zfill(25 - 14) + '1' * (92 - 25),  # stub ---- magic
+        '1' * 14 + ''.zfill(25 - 14) + '1' * (92 - 25), #stub ----- shielding
+        'I' * 14 + ''.zfill(25 - 14) + 'I' * (74 - 25) + ''.zfill(92 - 74),# mercurial
+        '1' * 14 + ''.zfill(25 - 14) + '1' * (74 - 25) + ''.zfill(92 - 74),# sage
     ]
     return masks[type]
 
@@ -30,24 +30,24 @@ def _pieces_attack_mask(type: int):
     pauns = "01010101010101010101000000010101010101010101010101010101010101010101010101010101010101010101"
     masks = [
         ''.zfill(92),#none
-        ''.zfill(14) + pauns[14:50] + ''.zfill(92 - 50),# warrior
+        ''.zfill(25) + pauns[25:50] + ''.zfill(92 - 50),# warrior
         ''.zfill(50) + pauns[50:74] + ''.zfill(92 - 74),# soldier
         ''.zfill(50) + pauns[50:74] + ''.zfill(92 - 74),# fighter
         pauns[:14] + ''.zfill(92 - 14),# faerie
         pauns[:14] + ''.zfill(92 - 14),# imp
-        ''.zfill(14) + pauns[14:50] + ''.zfill(92 - 50),# thopter
+        ''.zfill(25) + pauns[25:50] + ''.zfill(92 - 50),# thopter
         ''.zfill(74) + pauns[74:],# knight
         ''.zfill(92),# mine
-        '1' * 92,# stub ---- sputnik
+        '1' * 14 + ''.zfill(25 - 14) + '1' * (92 - 25),# stub ---- sputnik
         'I' * 14 + ''.zfill(92 - 14),# roar
-        ''.zfill(14) + 'I' * (50 - 14) + ''.zfill(92 - 50),# rummage
+        ''.zfill(25) + 'I' * (50 - 25) + ''.zfill(92 - 50),# rummage
         ''.zfill(50) + 'I' * (74 - 50) + ''.zfill(92 - 74),# lofty
         '0' * 74 + 'I' * 18, # onslaught
-        '1' * 92,  # stub ---- mad
-        '1' * 92,  # stub ---- magic
-        '1' * 92, #stub ----- shielding
-        'I' * 74 + ''.zfill(92 - 74),# mercurial
-        '1' * 74 + ''.zfill(92 - 74),# sage
+        '1' * 14 + ''.zfill(25 - 14) + '1' * (92 - 25),  # stub ---- mad
+        '1' * 14 + ''.zfill(25 - 14) + '1' * (92 - 25),  # stub ---- magic
+        '1' * 14 + ''.zfill(25 - 14) + '1' * (92 - 25), #stub ----- shielding
+        'I' * 14 + ''.zfill(25 - 14) + 'I' * (74 -25) + ''.zfill(92 - 74),# mercurial
+        '1' * 14 + ''.zfill(25 - 14) + '1' * (74 - 25) + ''.zfill(92 - 74),# sage
     ]
     return masks[type]
 
@@ -56,10 +56,10 @@ def _pieces_destroy_mask(type: int):
     masks = [
         ''.zfill(92),#none
         ''.zfill(50) + pauns[50:74] + ''.zfill(92 - 74),# warrior
-        ''.zfill(14) + pauns[14:50] + ''.zfill(92 - 50),# soldier
+        ''.zfill(25) + pauns[25:50] + ''.zfill(92 - 50),# soldier
         pauns[:14] + ''.zfill(92 - 14),# fighter
         ''.zfill(50) + pauns[50:74] + ''.zfill(92 - 74),# faerie
-        ''.zfill(14) + pauns[14:50] + ''.zfill(92 - 50),# imp
+        ''.zfill(25) + pauns[25:50] + ''.zfill(92 - 50),# imp
         pauns[:14] + ''.zfill(92 - 14),# thopter
         ''.zfill(74) + pauns[74:],# knight
         '1' * 74 + ''.zfill(92 - 74),# mine
@@ -68,11 +68,11 @@ def _pieces_destroy_mask(type: int):
         ''.zfill(14) + 'I' * (50 - 14) + ''.zfill(92 - 50),# rummage
         ''.zfill(50) + 'I' * (74 - 50) + ''.zfill(92 - 74),# lofty
         '0' * 74 + 'I' * 18, # onslaught
-        '1' * 92,  # stub ---- mad
-        '1' * 92,  # stub ---- magic
-        '1' * 92, #stub ----- shielding
-        'I' * 74 + ''.zfill(92 - 74),# mercurial
-        '1' * 74 + ''.zfill(92 - 74),# sage
+        '1' * 14 + ''.zfill(25 - 14) + '1' * (92 - 25),  # stub ---- mad
+        '1' * 14 + ''.zfill(25 - 14) + '1' * (92 - 25),  # stub ---- magic
+        '1' * 14 + ''.zfill(25 - 14) + '1' * (92 - 25), #stub ----- shielding
+        'I' * 14 + ''.zfill(25 - 14) + 'I' * (74 - 25) + ''.zfill(92 - 74),# mercurial
+        '1' * 14 + ''.zfill(25 - 14) + '1' * (74 -25) + ''.zfill(92 - 74),# sage
     ]
     return masks[type]
 
