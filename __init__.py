@@ -2,7 +2,7 @@ from ursina import Vec3
 from collections import namedtuple
 from itertools import chain
 
-SIDE = [WHITE, BLACK, HOLE] = ['♙' ,'♟︎', '●']
+SIDE = [WHITE, BLACK, HOLE] = ['♙', '♟︎', '●']
 SIDE_NAMES = ["black", "white"]
 
 PieceForm = int
@@ -17,6 +17,8 @@ PIECE_NAMES = [None, 'warrior', 'soldier', 'fighter', 'faerie', 'imp', 'thopter'
                'roar', 'rummage', 'lofty', 'onslaught', 'mad', 'magic', 'shielding', 'mercurial', 'sage']
 PIECE_TEXTURES = ["none", "ladybug"] + ["stub" for _ in range(2, 16)] + ["shield", "vertical", "target"]
 
+P_means_PAUNS = "01010101010101010101000000010101010101010101010101010101010101010101010101010101010101010101"
+
 VECTORS = [
     (4, 0, 0), (0, 4, 0), (0, 0, 4), #square faces
     (2, 2, 2), (2, 2, -2), (2, -2, 2), (-2, 2, 2), #hexagonal faces
@@ -30,18 +32,18 @@ VECTORS = [
     (4, 0, 8), (0, 4, 8), (-4, 0, 8), (0, -4, 8), #vertexes Z
     (6, 2, 2), (6, 2, -2), (6, -2, 2), (2, 6, 2), (2, 6, -2), (-2, 6, 2), (2, 2, 6), (2, -2, 6), (-2, 2, 6), #knight
 ]
-"""
+
 STEPS = {
     WHITE: list(chain.from_iterable([[Vec3(x), Vec3(x) * (-1)] for x in VECTORS])),
     BLACK: list(chain.from_iterable([[Vec3(x) * (-1), Vec3(x)] for x in VECTORS])),
     HOLE: [Vec3(0, 0, 0) for _ in range(92)]
 }
-"""
-#Piece = namedtuple('Piece', 'point form side', defaults = [(0,0,0), None, HOLE])
-#Legalmove = namedtuple("Legalmove", "motion capture kill", defaults=[set(), set(), set()])
+
+Piece = namedtuple('Piece', 'point form side', defaults = [(0,0,0), None, HOLE])
+Legalmove = namedtuple("Legalmove", "motion capture kill", defaults=[set(), set(), set()])
 
 def todo_nothing():
     pass
 
 if __name__ == '__main__':
-    print(VECTORS.index((-4, 4, 16)))
+    pass
