@@ -7,8 +7,8 @@ def _pieces_walk_mask(type: int):
         ''.zfill(92),#none
         pauns[:14] + ''.zfill(92 - 14),# warrior
         pauns[:14] + ''.zfill(92 - 14),# soldier
-        ''.zfill(14) + ''.zfill(25 - 14) + pauns[24:50] + ''.zfill(92 - 50),# fighter
-        ''.zfill(14) + ''.zfill(25 - 14) + pauns[24:50] + ''.zfill(92 - 50),# faerie
+        ''.zfill(14) + ''.zfill(25 - 14) + pauns[25:50] + ''.zfill(92 - 50),# fighter
+        ''.zfill(14) + ''.zfill(25 - 14) + pauns[25:50] + ''.zfill(92 - 50),# faerie
         ''.zfill(50) + pauns[50:74] + ''.zfill(92 - 74),# imp
         ''.zfill(50) + pauns[50:74] + ''.zfill(92 - 74),# thopter
         ''.zfill(74) + pauns[74:],# knight
