@@ -10,7 +10,7 @@ from Player import *
 
 
 if __name__ == '__main__':
-    print(VECTORS.id((16, 4, 4)))
+    print(Vec3(1, 1, 1) == Vec3(1, 1, 1))
     """
     app = Ursina(fullscreen=True, borderless=True)
     plus = Entity(

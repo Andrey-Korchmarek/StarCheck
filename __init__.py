@@ -1,13 +1,16 @@
 from ursina import Vec3
 from collections import namedtuple
 from itertools import chain
+from SettingsStorage import *
 
 SIDE = [WHITE, BLACK, HOLE] = ['♙', '♟︎', '●']
-SIDE_NAMES = ["black", "white"]
+SIDE_NAMES = ["black", "white", "hole"]
+
+PIECE_FORMS_FUTURE = [PieceForm(id) for id in range(13)]
 
 PieceForm = int
 PIECE_FORMS = [A, # Первая из 6 видов пешек - фигур, чей ход отличатся для передвижения, захвата и выстрела,
-               # а ходят они только на 1 хлетку и только вперёд.
+               # а ходят они только на 1 клетку и только вперёд.
                # Передвигается ортогонально, захватывает диагонально, стреляет триагонально
                E, # Пешка №2, передвигается ортогонально, захватывает триагонально, стреляет диагонально
                F, # Пешка №3, передвигается диагонально, захватывает триагонально, стреляет ортогонально
@@ -16,8 +19,6 @@ PIECE_SYMBOLS = [None, "a", "e", "f", "y", "m", "v", "n", "i", "t", "h", "x", "w
 PIECE_NAMES = [None, 'warrior', 'soldier', 'fighter', 'faerie', 'imp', 'thopter', 'knight', 'mine', 'sputnik',
                'roar', 'rummage', 'lofty', 'onslaught', 'mad', 'magic', 'shielding', 'mercurial', 'sage']
 PIECE_TEXTURES = ["none", "ladybug"] + ["stub" for _ in range(2, 16)] + ["shield", "vertical", "target"]
-
-P_means_PAUNS = "01010101010101010101000000010101010101010101010101010101010101010101010101010101010101010101"
 
 VECTORS = [
     (4, 0, 0), (0, 4, 0), (0, 0, 4), #square faces

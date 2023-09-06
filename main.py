@@ -1,5 +1,6 @@
 from ursina import *
 from __init__ import *
+from Observer import Observer
 from GameBoard import GameBoard
 from Player import Player
 
@@ -17,6 +18,7 @@ class Game(object):
             return 7
 
     def preparation(self):
+        self.observer = Observer()
         self.board = GameBoard(self.level, self.play, self.end_of_game)
         self.P1 = Player(WHITE)
         self.P2 = Player(BLACK)

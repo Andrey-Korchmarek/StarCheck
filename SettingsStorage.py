@@ -1,4 +1,5 @@
-from __init__ import  *
+from __init__ import *
+from ursina import Vec3
 
 """
 Любое действие фигур ограничено клетками поля.
@@ -10,6 +11,8 @@ from __init__ import  *
 Пешки - фигуры, чей ход отличатся для передвижения, захвата и выстрела,
 а ходят они только на 1 клетку и только вперёд, всего их 6 видов.
 """
+
+P_means_PAUNS = "01010101010101010101000000010101010101010101010101010101010101010101010101010101010101010101"
 
 pieceFormsValues = {
     # Заглушка. Ничего не делает, без текстуры и имени
@@ -132,20 +135,17 @@ pieceFormsValues = {
         "attack_mask": -1,
         "destroy_mask": -1,
     },
-
 }
 
-
-
 class PieceForm:
-    def __init__(self, id):
-        if id in pieceFormsValues.keys():
-            self.symbol = pieceFormsValues[id]["symbol"]
-            self.name = pieceFormsValues[id]["name"]
-            self.texture = 'textures/' + pieceFormsValues[id]["texture"]
-            self.walk_mask = pieceFormsValues[id]["walk_mask"]
-            self.attack_mask = pieceFormsValues[id]["attack_mask"]
-            self.destroy_mask = pieceFormsValues[id]["destroy_mask"]
+    def __init__(self, index):
+        if index in pieceFormsValues.keys():
+            self.symbol = pieceFormsValues[index]["symbol"]
+            self.name = pieceFormsValues[index]["name"]
+            self.texture = 'textures/' + pieceFormsValues[index]["texture"]
+            self.walk_mask = pieceFormsValues[index]["walk_mask"]
+            self.attack_mask = pieceFormsValues[index]["attack_mask"]
+            self.destroy_mask = pieceFormsValues[index]["destroy_mask"]
         else:
             # TODO: add exception
             pass

@@ -29,6 +29,11 @@ class Nucleus(Entity):
             collider = 'sphere',
             position = pos,
             )
+    def __eq__(self, other):
+        if isinstance(other, Nucleus):
+            return self.position == other.position
+        return NotImplemented
+
 
 class GameBoard(object):
     def __init__(self, size, start_new_turn, end):
