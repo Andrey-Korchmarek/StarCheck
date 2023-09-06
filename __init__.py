@@ -39,7 +39,7 @@ STEPS = {
     HOLE: [Vec3(0, 0, 0) for _ in range(92)]
 }
 
-Piece = namedtuple('Piece', 'point form side', defaults = [(0,0,0), None, HOLE])
+Piece = namedtuple('Piece', 'point form side', defaults = [Vec3(0,0,0), None, HOLE])
 Legalmove = namedtuple("Legalmove", "motion capture kill", defaults=[set(), set(), set()])
 
 def todo_nothing():
