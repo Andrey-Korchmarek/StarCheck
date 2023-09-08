@@ -2,10 +2,6 @@ from __init__ import *
 from Unit import Unit
 from Сalculations import *
 from ursina import Entity, Vec3, color, held_keys, Func
-from __init__ import *
-from Unit import Unit
-from Сalculations import *
-from ursina import Entity, Vec3, color, held_keys, Func
 
 
 class Cell(Entity):

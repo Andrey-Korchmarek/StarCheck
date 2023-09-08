@@ -7,8 +7,9 @@ class Observer(object):
         return cls.instance
     def __init__(self):
         self.cells = set()
-        self.white = set()
-        self.black = set()
+        self.pieces = {}
+        self.activePlayer = -1
+        self. selectedUnit = -1
 
     def addCells(self, list):
         self.cells.update(list)

@@ -1,5 +1,5 @@
-from __init__ import *
 from ursina import Vec3
+from collections import namedtuple
 
 """
 Любое действие фигур ограничено клетками поля.
@@ -149,6 +149,11 @@ class PieceForm:
         else:
             # TODO: add exception
             pass
+
+SIDE = [WHITE, BLACK, HOLE] = ['♙', '♟︎', '●']
+SIDE_NAMES = ["black", "white", "hole"]
+
+Piece = namedtuple('Piece', 'point form side', defaults = [Vec3(0,0,0), None, HOLE])
 
 startingPositionOfPieces = {
     3: {
