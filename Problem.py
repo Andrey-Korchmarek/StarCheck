@@ -1,6 +1,7 @@
 from ursina import Vec3
 from math import sqrt, isclose
 from itertools import permutations, product
+import numpy as np
 
 # Хранилище параметров усечённого октаэдра: длинна стороны, радиусы вписанной сфер шестиугольников и квадратов,
 # радиус полувписанной сферы, радиус описанной сферы, координаты начальной ячейки в генераторе сот
@@ -60,4 +61,9 @@ def generate_coordinates(borders):
         brd = {point for point in next
                 if any([isclose(x, 0.0, abs_tol=1e-9) for x in [sum(norm * point) + l for norm, l in borders]])}
 
-    return dict(solid = solid, hollow = hollow)
+    return dict(solid=solid, hollow=hollow)
+
+if __name__ == '__main__':
+    a = Vec3(4, 4, 4)
+    b = np.array([a, a, a])
+    print(np.linalg.det(b))
