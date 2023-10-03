@@ -142,7 +142,7 @@ class PieceForm:
         if index in pieceFormsValues.keys():
             self.symbol = pieceFormsValues[index]["symbol"]
             self.name = pieceFormsValues[index]["name"]
-            self.texture = 'textures/' + pieceFormsValues[index]["texture"]
+            self.texture = 'textures/' + str(pieceFormsValues[index]["texture"])
             self.walk_mask = pieceFormsValues[index]["walk_mask"]
             self.attack_mask = pieceFormsValues[index]["attack_mask"]
             self.destroy_mask = pieceFormsValues[index]["destroy_mask"]
