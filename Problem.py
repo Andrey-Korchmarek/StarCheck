@@ -1,4 +1,4 @@
-from ursina import *
+from ursina import Vec3
 from math import sqrt, isclose
 from itertools import permutations, product
 import numpy as np
@@ -77,25 +77,7 @@ def generate_ring(point, index, shell):
         else:
             return -1
 
-class Cell(Entity):
-    def __init__(self, pos):
-        color_calc = {0: color.gray, 2: color.red, 6: color.green, 4: color.blue}
-        super().__init__(
-            model='models/Cell',
-            color = color_calc[sum(pos) % 8],
-            position=pos,
-            )
-
 if __name__ == '__main__':
     board = generate_coordinates(generate_borders(7))
     shell = board["hollow"]
-    other = board["solid"] - shell
-    app = Ursina()
-    window.fullscreen = True
-    window.exit_button.visible = False
-    EditorCamera()
-    cells = [Cell(coord) for coord in shell]
-    def input(key):
-        if 'escape' == key:
-            application.quit()
-    app.run()
+    print(generate_ring(Vec3(0, 12, 0), 0, shell))
