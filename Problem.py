@@ -1,4 +1,4 @@
-from ursina import Vec3
+from ursina import *
 from math import sqrt, isclose
 from itertools import permutations, product
 import numpy as np
@@ -63,7 +63,38 @@ def generate_coordinates(borders):
 
     return dict(solid=solid, hollow=hollow)
 
+def generate_ring(point, index, shell):
+    if point not in shell:
+        return -1
+    else:
+        faces = set(product((1, -1), repeat=3)).union(*[set(permutations((i, 0, 0))) for i in (2, -2)])
+        faces = [Vec3(dot) for dot in faces]
+        target = [point + x for x in faces]
+        target = [t for t in target if t in shell]
+        if 0 <= index < len(target):
+            dot = target[index]
+            return [x for x in shell if isclose(np.linalg.det(np.array([x, point, dot - point])), 0.0, abs_tol=1e-9)]
+        else:
+            return -1
+
+class Cell(Entity):
+    def __init__(self, pos):
+        color_calc = {0: color.gray, 2: color.red, 6: color.green, 4: color.blue}
+        super().__init__(
+            model='models/Cell',
+            color = color_calc[sum(pos) % 8],
+            position=pos,
+            )
+
 if __name__ == '__main__':
-    a = Vec3(4, 4, 4)
-    b = np.array([a, a, a])
-    print(np.linalg.det(b))
+    board = generate_coordinates(generate_borders(9))
+    shell = board["hollow"]
+    app = Ursina()
+    window.fullscreen = True
+    window.exit_button.visible = False
+    EditorCamera()
+    cells = [Cell(coord) for coord in shell]
+    def input(key):
+        if 'escape' == key:
+            application.quit()
+    app.run()
