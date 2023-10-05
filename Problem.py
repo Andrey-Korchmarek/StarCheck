@@ -1,4 +1,4 @@
-from ursina import Vec3, ursinamath
+from ursina import *
 from math import sqrt, isclose
 from itertools import permutations, product
 import numpy as np
@@ -67,14 +67,33 @@ def generate_ring(point, index, shell):
     if point not in shell:
         return -1
     else:
-        target = [x for x in shell if ursinamath.distance(point, x) < CONSTANTS["R"] * 2]
+        target = [x for x in shell if ursinamath.distance(point, x) < CONSTANTS["R"] * 3]
         if 0 <= index < len(target):
             dot = target[index]
             return [x for x in shell if isclose(np.linalg.det(np.array([x, point, dot - point])), 0.0, abs_tol=0.9)]
         else:
             return -1
 
+class Cell(Entity):
+    def __init__(self, pos):
+        color_calc = {0: color.gray, 2: color.red, 6: color.green, 4: color.blue}
+        super().__init__(
+            model='models/Cell',
+            color = color_calc[sum(pos) % 8],
+            position=pos,
+            )
+
 if __name__ == '__main__':
     board = generate_coordinates(generate_borders(7))
     shell = board["hollow"]
-    print(generate_ring(Vec3(0, 12, 0), 0, shell))
+    #print(generate_ring(Vec3(0, 12, 0), 0, shell))
+    app = Ursina()
+    window.fullscreen = True
+    window.exit_button.visible = False
+    EditorCamera()
+    cells = [Cell(coord) for coord in generate_ring(Vec3(0, 12, 0), 4, shell)]
+    def input(key):
+        if 'escape' == key:
+            application.quit()
+    app.run()
+
