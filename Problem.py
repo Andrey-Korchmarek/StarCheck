@@ -59,7 +59,7 @@ def generate_coordinates(borders):
         next.difference_update(solid)
         next = {point for point in next if all([int(x) >= 0 for x in [sum(norm * point) + l for norm, l in borders]])}
         brd = {point for point in next
-                if any([isclose(x, 0.0, abs_tol=1e-9) for x in [sum(norm * point) + l for norm, l in borders]])}
+                if any([isclose(x, 0.0, abs_tol=0.9) for x in [sum(norm * point) + l for norm, l in borders]])}
 
     return dict(solid=solid, hollow=hollow)
 
@@ -73,7 +73,7 @@ def generate_ring(point, index, shell):
         target = [t for t in target if t in shell]
         if 0 <= index < len(target):
             dot = target[index]
-            return [x for x in shell if isclose(np.linalg.det(np.array([x, point, dot - point])), 0.0, abs_tol=1e-9)]
+            return [x for x in shell if isclose(np.linalg.det(np.array([x, point, dot - point])), 0.0, abs_tol=0.9)]
         else:
             return -1
 
@@ -87,8 +87,9 @@ class Cell(Entity):
             )
 
 if __name__ == '__main__':
-    board = generate_coordinates(generate_borders(9))
+    board = generate_coordinates(generate_borders(7))
     shell = board["hollow"]
+    other = board["solid"] - shell
     app = Ursina()
     window.fullscreen = True
     window.exit_button.visible = False
