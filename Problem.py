@@ -1,4 +1,4 @@
-from ursina import Vec3
+from ursina import Vec3, ursinamath
 from math import sqrt, isclose
 from itertools import permutations, product
 import numpy as np
@@ -67,10 +67,7 @@ def generate_ring(point, index, shell):
     if point not in shell:
         return -1
     else:
-        faces = set(product((1, -1), repeat=3)).union(*[set(permutations((i, 0, 0))) for i in (2, -2)])
-        faces = [Vec3(dot) for dot in faces]
-        target = [point + x for x in faces]
-        target = [t for t in target if t in shell]
+        target = [x for x in shell if ursinamath.distance(point, x) < CONSTANTS["R"] * 2]
         if 0 <= index < len(target):
             dot = target[index]
             return [x for x in shell if isclose(np.linalg.det(np.array([x, point, dot - point])), 0.0, abs_tol=0.9)]
