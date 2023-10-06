@@ -1,5 +1,5 @@
 from ursina import Vec3, ursinamath
-from math import sqrt, isclose
+from math import sqrt, isclose, trunc
 from itertools import permutations, product
 import numpy as np
 
@@ -86,6 +86,11 @@ def generate_ring(point, index, shell):
             return -1
 
 if __name__ == '__main__':
-    board = generate_coordinates(generate_borders(7))
-    shell = board["hollow"]
-    print(generate_ring(Vec3(0, 12, 0), 4, shell))
+    faces = set(product((1, -1), repeat=3)).union(*[set(permutations((i, 0, 0))) for i in (2, -2)])
+    faces = [np.array(dot) for dot in faces]
+    for i in range(3, 11):
+        board = generate_coordinates(generate_borders(i))
+        shell = [np.array(dot) for dot in board["hollow"]]
+        target = [trunc(max([np.dot(a, b) / (np.linalg.norm(b) ** 2) for b in faces])) for a in shell]
+        print(i, max(target))
+
