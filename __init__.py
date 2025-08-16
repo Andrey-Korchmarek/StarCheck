@@ -13,12 +13,12 @@ from ursina import *
 from test import TestSystem
 from render import RenderSystem
 
-def system_manager(test_sys=False, render_sys=True):
+def system_manager(dev_mode=True, test_sys=False, render_sys=True):
     if test_sys:
         global test_system
         test_system = TestSystem()
         add_system(test_system)
     if render_sys:
         global render_system
-        render_system = RenderSystem()
+        render_system = RenderSystem(development=dev_mode)
         add_system(render_system)
