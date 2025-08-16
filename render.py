@@ -13,24 +13,39 @@ class Model:
 class Size:
     size: int = 1
 
+@component
+class Color:
+    color = color.white
+
 class RenderSystem(System):
     def __init__(self, development):
         self.development = development
 
     def process(self):
         global render
-        render=Ursina(development_mode=self.development)
-        for ent, [rend] in get_components(Renderable):
+        render = Ursina(development_mode=self.development)
+        for ent, rend in get_component(Renderable):
             rend.rendering = Entity()
         for ent, [rend, pos] in get_components(Renderable, Position):
             rend.rendering.position = pos.position
         for ent, [rend, mod] in get_components(Renderable, Model):
             rend.rendering.model = mod.model
+        for ent, [rend, clr] in get_components(Renderable, Color):
+            rend.rendering.color = clr.color
+        #window.fullscreen = True
         EditorCamera()
         def keyboard_input(key):
             combined_key = input_handler.get_combined_key(key)
             if combined_key == 'shift+escape':
                 quit()
+            if key == 'e':
+                for ent, [rend, sz] in get_components(Renderable, Size):
+                    sz.size += 1
+                    rend.rendering.scale = sz.size
+            if key == 'q':
+                for ent, [rend, sz] in get_components(Renderable, Size):
+                    sz.size -= 1
+                    rend.rendering.scale = sz.size
             if key == 'w':
                 pass
             if key == 's':
@@ -52,10 +67,8 @@ class RenderSystem(System):
         input_handler.input = keyboard_input
         render.run()
 
+border = create_entity(Renderable(), Position(), Model(), Size(), Color())
+
 if __name__ == '__main__':
-    border = create_entity(Renderable(), Position(), Model())
     system_manager(dev_mode=True)
     process()
-
-    pos = Vec3(1, 2, 3)
-    print(pos.z)
