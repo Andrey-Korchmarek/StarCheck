@@ -1,0 +1,67 @@
+        center = (0, 0, 0)
+        vertexes = set().union(*[list(permutations(elem)) for elem in [(0, u, d) for u in (1, -1) for d in (2, -2)]])
+        edges = set().union(*[list(permutations((0, u, d))) for u in (1.5, -1.5) for d in (1.5, -1.5)])
+        edges.update(*[list(permutations((z, u, d))) for z in (0.5, -0.5) for u in (0.5, -0.5) for d in (2, -2)])
+        faces = set(product((1, -1), repeat=3)).union(*[set(permutations((i, 0, 0))) for i in (2, -2)])
+
+
+def outside_to_inside_dot(position, delta = 12):
+    dlen = 1/delta
+    mask = tuple(abs(i) for i in position)
+    z = mask.index(0)
+    u = mask.index(1)
+    d = mask.index(2)
+    us = position[u]
+    ds = position[d] // 2
+    up = list(position)
+    right = list(position)
+    left = list(position)
+    up[u] = us * (1 - dlen)
+    right[z] = dlen
+    right[d] = ds * (2 - dlen)
+    left[z] = -dlen
+    left[d] = ds * (2 - dlen)
+    return [tuple(up), tuple(right), tuple(left)]
+
+color_calculation = {0: color.gray, 2: color.red, 6: color.green, 4: color.blue}
+
+        king = [
+            Vec3(2, 2, 2), Vec3(-2, -2, -2),
+            Vec3(2, 2, -2), Vec3(-2, -2, 2),
+            Vec3(2, -2, 2), Vec3(-2, 2, -2),
+            Vec3(-2, 2, 2), Vec3(2, -2, -2),
+            Vec3(4, 0, 0), Vec3(-4, 0, 0),
+            Vec3(0, 4, 0), Vec3(0, -4, 0),
+            Vec3(0, 0, 4), Vec3(0, 0, -4),
+            Vec3(4, 4, 0), Vec3(-4, -4, 0),
+            Vec3(4, 0, 4), Vec3(-4, 0, -4),
+            Vec3(0, 4, 4), Vec3(0, -4, -4),
+            Vec3(4, -4, 0), Vec3(-4, 4, 0),
+            Vec3(4, 0, -4), Vec3(-4, 0, 4),
+            Vec3(0, 4, -4), Vec3(0, -4, 4),
+            Vec3(6, 2, 2), Vec3(-6, -2, -2),
+            Vec3(6, 2, -2), Vec3(-6, -2, 2),
+            Vec3(6, -2, 2), Vec3(-6, 2, -2),
+            Vec3(6, -2, -2), Vec3(-6, 2, 2),
+            Vec3(2, 6, 2), Vec3(-2, -6, -2),
+            Vec3(2, 6, -2), Vec3(-2, -6, 2),
+            Vec3(-2, 6, 2), Vec3(2, -6, -2),
+            Vec3(-2, 6, -2), Vec3(2, -6, 2),
+            Vec3(2, 2, 6), Vec3(-2, -2, -6),
+            Vec3(2, -2, 6), Vec3(-2, 2, -6),
+            Vec3(-2, 2, 6), Vec3(2, -2, -6),
+            Vec3(-2, -2, 6), Vec3(2, 2, -6),
+            Vec3(8, 4, 0), Vec3(-8, -4, 0),
+            Vec3(8, 0, 4), Vec3(-8, 0, -4),
+            Vec3(8, -4, 0), Vec3(-8, 4, 0),
+            Vec3(8, 0, -4), Vec3(-8, 0, 4),
+            Vec3(4, 8, 0), Vec3(-4, -8, 0),
+            Vec3(0, 8, 4), Vec3(0, -8, -4),
+            Vec3(0, 8, -4), Vec3(0, -8, 4),
+            Vec3(-4, 8, 0), Vec3(4, -8, 0),
+            Vec3(4, 0, 8), Vec3(-4, 0, -8),
+            Vec3(0, 4, 8), Vec3(0, -4, -8),
+            Vec3(0, -4, 8), Vec3(0, 4, -8),
+            Vec3(-4, 0, 8), Vec3(4, 0, -8),
+        ]
+

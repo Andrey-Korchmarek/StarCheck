@@ -1,58 +1,39 @@
-import itertools
-from GameBoard import *
-from Сalculations import *
-from ursina import *
-from Unit import *
-from collections import namedtuple
 from __init__ import *
-from Player import *
+
+@component
+class Position:
+    position: Vec3 = Vec3(0, 0, 0)
+
+@component
+class Size:
+    size: float = 1.0
+
+@component
+class Model:
+    model: str = 'sphere'
+
+@component
+class Renderable:
+    rendering: Entity = None
+
+border = create_entity(Renderable(), Position(), Model())
 
 
+@component
+class TestComponent:
+    msg: str = "Default message."
+
+test1 = create_entity()
+add_component(test1, TestComponent("Message test"))
+test2 = create_entity()
+add_component(test2, TestComponent())
+
+class TestSystem(System):
+
+    def process(self):
+        for ent, [tst] in get_components(Renderable):
+            print(tst.msg)
 
 if __name__ == '__main__':
-    print(Vec3(1, 1, 1) == Vec3(1, 1, 1))
-    """
-    app = Ursina(fullscreen=True, borderless=True)
-    plus = Entity(
-            model='sphere',
-            texture='textures/' + "A+X_398x192.png",
-            collision=True,
-            collider='sphere',
-            position=Vec3(2, 2, 2),
-            scale=1.5,
-            #billboard=True,
-        )
-    minus = Entity(
-            model='sphere',
-            texture='textures/' + "A+X_398x192.png",
-            collision=True,
-            collider='sphere',
-            position=Vec3(-2, -2, -2),
-            scale=1.5,
-            #billboard=True,
-        )
-    center = Entity(model="models/custom_cube.obj", texture="textures/rubik_texture.png")
-    plus.rotate((-30, 45, 0))
-    minus.rotate((30, -135, 180))
-    count = Vec3(0,0,0)
-    def input(key):
-
-        global count
-        i = 15
-        if key == 'x':
-            minus.rotate((0, i, 0))
-            count.y += i
-            print(count)
-        if key == 'c':
-            minus.rotate((0, 0, i))
-            count.z += i
-            print(count)
-        if key == 'space':
-            print(held_keys['z'])
-        if key == 'left control':
-            print(held_keys['spase'])
-        if key == 'escape':
-            application.quit()
-    EditorCamera()
-    app.run()
-    """
+    system_manager(test_sys=True)
+    process()
