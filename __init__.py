@@ -1,24 +1,21 @@
 from dataclasses import dataclass as component
-from esper import *
-del globals()['Processor']
-from esper import Processor as System
-del globals()['add_processor']
-from esper import add_processor as add_system
-del globals()['remove_processor']
-from esper import remove_processor as remove_system
-del globals()['get_processor']
-from esper import get_processor as get_system
+from system import *
 from ursina import *
 
-from test import TestSystem
+global GAME
+GAME = True
+
+from test import TestProcessor
 from render import RenderSystem
 
-def system_manager(dev_mode=True, test_sys=False, render_sys=True):
-    if test_sys:
-        global test_system
-        test_system = TestSystem()
-        add_system(test_system)
+def system_manager(dev_mode=True, test_proc=False, render_sys=True):
+    def processor_manager():
+        if test_proc:
+            global test_processor
+            test_processor = TestProcessor()
+            add_processor(test_processor)
+    processor_manager()
     if render_sys:
         global render_system
-        render_system = RenderSystem(development=dev_mode)
+        render_system = RenderSystem()
         add_system(render_system)

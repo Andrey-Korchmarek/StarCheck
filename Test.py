@@ -4,7 +4,7 @@ from __init__ import *
 class TestComponent:
     msg: str = "Default message."
 
-class TestSystem(System):
+class TestProcessor(Processor):
 
     def process(self):
         for ent, [tst] in get_components(TestComponent):
@@ -15,5 +15,5 @@ if __name__ == '__main__':
     add_component(test1, TestComponent("Message test"))
     test2 = create_entity()
     add_component(test2, TestComponent())
-    system_manager(test_sys=True)
-    process()
+    system_manager(test_proc=True)
+    systemize()
