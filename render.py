@@ -1,31 +1,52 @@
+import system
 from __init__ import *
+from ursina import Keys
 from core import Position
-
 
 @component
 class Renderable:
-    rendering: Entity = None
+    rendering: ursina.Entity = None
 
-class RenderProcessor(Processor):
-
-    def process(self):
-        for ent, rend in get_component(Renderable):
-            rend.rendering = Entity()
-
-class RenderPositionProcessor(Processor):
+class RenderProcessor(esper.Processor):
 
     def process(self):
-        for ent, [rend, pos] in get_components(Renderable, Position):
+        spisok = esper.get_component(Renderable)
+        print(len(spisok))
+        for ent, rend in spisok:
+            rend.rendering = ursina.Entity()
+
+class RenderPositionProcessor(esper.Processor):
+
+    def process(self):
+        for ent, [rend, pos] in esper.get_components(Renderable, Position):
             rend.rendering.position = pos.position
+
+@component
+class Hidden:
+    hidden: bool = True
+
+class HiddenProcessor(esper.Processor):
+
+    def change_visible(self):
+        for ent, [rend, hide] in esper.get_components(Renderable, Hidden):
+            hide.hidden = not hide.hidden
+            #print(ent, rend.rendering)
+            rend.rendering.visible = not hide.hidden
+
+    def process(self):
+        for ent, [rend, hide] in esper.get_components(Renderable, Hidden):
+            #print(ent)
+            rend.rendering.visible = not hide.hidden
+        esper.set_handler("change visible", self.change_visible)
 
 @component
 class Model:
     model: str = 'sphere'
 
-class ModelProcessor(Processor):
+class ModelProcessor(esper.Processor):
 
     def process(self):
-        for ent, [rend, mod] in get_components(Renderable, Model):
+        for ent, [rend, mod] in esper.get_components(Renderable, Model):
             rend.rendering.model = mod.model
 
 @component
@@ -33,55 +54,55 @@ class Size:
     size: int = 1
 
 
-class SizeProcessor(Processor):
+class SizeProcessor(esper.Processor):
 
     def plus_size(self):
-        for ent, [rend, sz] in get_components(Renderable, Size):
+        for ent, [rend, sz] in esper.get_components(Renderable, Size):
             sz.size += 1
             rend.rendering.scale = sz.size
 
     def minus_size(self):
-        for ent, [rend, sz] in get_components(Renderable, Size):
+        for ent, [rend, sz] in esper.get_components(Renderable, Size):
             sz.size -= 1
             rend.rendering.scale = sz.size
 
     def process(self):
-        for ent, [rend, sz] in get_components(Renderable, Size):
+        for ent, [rend, sz] in esper.get_components(Renderable, Size):
             rend.rendering.scale = sz.size
-        set_handler("plus_size", self.plus_size)
-        set_handler("minus_size", self.minus_size)
+        esper.set_handler("plus_size", self.plus_size)
+        esper.set_handler("minus_size", self.minus_size)
 
 @component
 class Colour:
-    colour: Color = color.white
+    colour: ursina.Color = ursina.color.white
 
-class ColourProcessor(Processor):
+class ColourProcessor(esper.Processor):
 
     def process(self):
-        for ent, [rend, clr] in get_components(Renderable, Colour):
+        for ent, [rend, clr] in esper.get_components(Renderable, Colour):
             rend.rendering.color = clr.colour
 
 @component
 class Transparent:
     alpha = 0.2
 
-class TransparentProcessor(Processor):
+class TransparentProcessor(esper.Processor):
 
     def process(self):
-        for ent, [rend, trn] in get_components(Renderable, Transparent):
+        for ent, [rend, trn] in esper.get_components(Renderable, Transparent):
             rend.rendering.alpha = trn.alpha
 
 def keyboard_input(key):
     global GAME
-    combined_key = input_handler.get_combined_key(key)
+    combined_key = ursina.input_handler.get_combined_key(key)
     if combined_key == 'shift+escape':
         quit()
-        GAME = 0
-        return
     if key == 'e':
-        dispatch_event("plus_size")
+        esper.dispatch_event("plus_size")
     if key == 'q':
-        dispatch_event("minus_size")
+        esper.dispatch_event("minus_size")
+    if key == 'tab':
+        esper.dispatch_event("change visible")
     if key == 'w':
         pass
     if key == 's':
@@ -97,13 +118,13 @@ def keyboard_input(key):
     key = key.replace('mouse down', 'mouse')
 
     if key.endswith(' up') and key != 'page up' and key != 'gamepad dpad up':
-        held_keys[key[:-3]] = 0
+        ursina.held_keys[key[:-3]] = 0
     else:
-        held_keys[key] = 1
+        ursina.held_keys[key] = 1
 
-class RenderSystem(System):
+class RenderSystem(system.System):
     def __init__(self, development):
-        self.render = Ursina(development_mode=development)
+        self.render = ursina.Ursina(development_mode=development)
 
     def systemize(self):
         self.add_processor(RenderProcessor(), 5)
@@ -112,22 +133,13 @@ class RenderSystem(System):
         self.add_processor(SizeProcessor(), 0)
         self.add_processor(ColourProcessor(), 2)
         self.add_processor(TransparentProcessor(), 1)
+        self.add_processor(HiddenProcessor(), 4)
+        self.process()
         #window.fullscreen = True
-        EditorCamera()
-        input_handler.input = keyboard_input
-
-#border = create_entity(Renderable(), Position(), Model(), Size(), Colour())
+        ursina.EditorCamera()
+        ursina.input_handler.input = keyboard_input
+        self.render.run()
 
 if __name__ == '__main__':
-    system_manager()
-    while GAME != 0:
-        match GAME:
-            case 1:
-                print("Game is paused.")
-                continue
-            case 2:
-                systemize()
-                continue
-            case _:
-                print("Somthing wrong.")
-                continue
+    init()
+    system.systemize()

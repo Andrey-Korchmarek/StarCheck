@@ -1,26 +1,19 @@
+from settings import settings
 from dataclasses import dataclass as component
-from system import *
-from ursina import *
+import esper
+import system
+import ursina
+from ursina import Vec3, color
 
-global GAME
-GAME = 2
-
+import gameboard
 from test import TestProcessor
 from render import RenderSystem
-from gameboard import GameboardSystem
 
-def system_manager(dev_mode=True, test_proc=False, render_sys=True, board_sys = True):
-    def processor_manager():
-        if test_proc:
-            global test_processor
-            test_processor = TestProcessor()
-            add_processor(test_processor)
-    processor_manager()
+esper.set_handler("create gameboard", gameboard.create_gameboard)
+
+def init(dev_mode=True, test_proc=False, render_sys=True):
+    esper.dispatch_event("create gameboard")
     if render_sys:
         global render_system
         render_system = RenderSystem(dev_mode)
-        add_system(render_system, 0)
-    if board_sys:
-        global gameboard_system
-        gameboard_system = GameboardSystem()
-        add_system(gameboard_system, 3)
+        system.add_system(render_system, 0)

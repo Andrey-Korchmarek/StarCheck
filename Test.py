@@ -4,16 +4,16 @@ from __init__ import *
 class TestComponent:
     msg: str = "Default message."
 
-class TestProcessor(Processor):
+class TestProcessor(esper.Processor):
 
     def process(self):
-        for ent, [tst] in get_components(TestComponent):
+        for ent, [tst] in esper.get_components(TestComponent):
             print(tst.msg)
 
 if __name__ == '__main__':
-    test1 = create_entity()
-    add_component(test1, TestComponent("Message test"))
-    test2 = create_entity()
-    add_component(test2, TestComponent())
+    test1 = esper.create_entity()
+    esper.add_component(test1, TestComponent("Message test"))
+    test2 = esper.create_entity()
+    esper.add_component(test2, TestComponent())
     system_manager(test_proc=True)
-    systemize()
+    system.systemize()
