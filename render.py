@@ -6,6 +6,12 @@ from core import Position
 class Renderable:
     rendering: Entity = None
 
+class RenderProcessor(Processor):
+
+    def process(self):
+        for ent, rend in get_component(Renderable):
+            rend.rendering = Entity()
+
 class RenderPositionProcessor(Processor):
 
     def process(self):
@@ -29,33 +35,53 @@ class Size:
 
 class SizeProcessor(Processor):
 
+    def plus_size(self):
+        for ent, [rend, sz] in get_components(Renderable, Size):
+            sz.size += 1
+            rend.rendering.scale = sz.size
+
+    def minus_size(self):
+        for ent, [rend, sz] in get_components(Renderable, Size):
+            sz.size -= 1
+            rend.rendering.scale = sz.size
+
     def process(self):
-        pass
+        for ent, [rend, sz] in get_components(Renderable, Size):
+            rend.rendering.scale = sz.size
+        set_handler("plus_size", self.plus_size)
+        set_handler("minus_size", self.minus_size)
 
 @component
-class Color:
-    color = color.white
+class Colour:
+    colour: Color = color.white
 
-class ColorProcessor(Processor):
+class ColourProcessor(Processor):
 
     def process(self):
-        for ent, [rend, clr] in get_components(Renderable, Color):
-            rend.rendering.color = clr.color
+        for ent, [rend, clr] in get_components(Renderable, Colour):
+            rend.rendering.color = clr.colour
+
+@component
+class Transparent:
+    alpha = 0.2
+
+class TransparentProcessor(Processor):
+
+    def process(self):
+        for ent, [rend, trn] in get_components(Renderable, Transparent):
+            rend.rendering.alpha = trn.alpha
 
 def keyboard_input(key):
     global GAME
     combined_key = input_handler.get_combined_key(key)
     if combined_key == 'shift+escape':
         quit()
-        GAME = False
+        GAME = 0
+        return
     if key == 'e':
-        for ent, [rend, sz] in get_components(Renderable, Size):
-            sz.size += 1
-            rend.rendering.scale = sz.size
+        dispatch_event("plus_size")
     if key == 'q':
-        for ent, [rend, sz] in get_components(Renderable, Size):
-            sz.size -= 1
-            rend.rendering.scale = sz.size
+        dispatch_event("minus_size")
     if key == 'w':
         pass
     if key == 's':
@@ -76,26 +102,32 @@ def keyboard_input(key):
         held_keys[key] = 1
 
 class RenderSystem(System):
-    #def __init__(self, development):
-    #    self.development = development
+    def __init__(self, development):
+        self.render = Ursina(development_mode=development)
 
     def systemize(self):
-        global render
-        render = Ursina(development_mode=True)
-        for ent, rend in get_component(Renderable):
-            rend.rendering = Entity()
-        self.add_processor(RenderPositionProcessor())
-        self.add_processor(ModelProcessor())
-        self.add_processor(ColorProcessor())
-        self.process()
+        self.add_processor(RenderProcessor(), 5)
+        self.add_processor(RenderPositionProcessor(), 4)
+        self.add_processor(ModelProcessor(), 3)
+        self.add_processor(SizeProcessor(), 0)
+        self.add_processor(ColourProcessor(), 2)
+        self.add_processor(TransparentProcessor(), 1)
         #window.fullscreen = True
         EditorCamera()
         input_handler.input = keyboard_input
-        render.step()
 
-border = create_entity(Renderable(), Position(), Model(), Size(), Color())
+#border = create_entity(Renderable(), Position(), Model(), Size(), Colour())
 
 if __name__ == '__main__':
     system_manager()
-    while GAME:
-        systemize()
+    while GAME != 0:
+        match GAME:
+            case 1:
+                print("Game is paused.")
+                continue
+            case 2:
+                systemize()
+                continue
+            case _:
+                print("Somthing wrong.")
+                continue

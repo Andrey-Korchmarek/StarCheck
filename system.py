@@ -30,7 +30,7 @@ class System:
     """
 
     priority = 0
-    _processors: _List[Processor] = []
+    sys_processors: _List[Processor] = []
 
     def add_processor(self, processor_instance: Processor, priority: int = 0) -> None:
         """Add a Processor instance to the current World.
@@ -42,8 +42,8 @@ class System:
         Processors with higher priority will be called first.
         """
         processor_instance.priority = priority
-        self._processors.append(processor_instance)
-        self._processors.sort(key=lambda proc: proc.priority, reverse=True)
+        self.sys_processors.append(processor_instance)
+        self.sys_processors.sort(key=lambda proc: proc.priority, reverse=True)
 
     def remove_processor(self, processor_type: _Type[Processor]) -> None:
         """Remove a Processor from the World, by type.
@@ -57,9 +57,9 @@ class System:
             self.world.remove_processor(my_processor_instance)
 
         """
-        for processor in self._processors:
+        for processor in self.sys_processors:
             if type(processor) is processor_type:
-                self._processors.remove(processor)
+                self.sys_processors.remove(processor)
 
     def get_processor(self, processor_type: _Type[Processor]) -> _Optional[Processor]:
         """Get a Processor instance, by type.
@@ -68,7 +68,7 @@ class System:
         useful in certain situations, such as wanting to call a method on a
         Processor, from within another Processor.
         """
-        for processor in self._processors:
+        for processor in self.sys_processors:
             if type(processor) is processor_type:
                 return processor
         else:
@@ -83,7 +83,7 @@ class System:
         at the start of this call.
         """
         clear_dead_entities()
-        for processor in self._processors:
+        for processor in self.sys_processors:
             processor.process(*args, **kwargs)
 
     def systemize(self, *args: _Any, **kwargs: _Any) -> None:
@@ -93,7 +93,7 @@ class System:
 #   ECS functions
 ###################
 
-_systems: _List[System] = []
+systems: _List[System] = []
 
 def systemize(*args: _Any, **kwargs: _Any) -> None:
     """Call the process method on all Processors, in order of their priority.
@@ -104,7 +104,7 @@ def systemize(*args: _Any, **kwargs: _Any) -> None:
     at the start of this call.
     """
     process()
-    for system in _systems:
+    for system in systems:
         system.systemize(*args, **kwargs)
         system.process()
 
@@ -118,8 +118,8 @@ def add_system(system_instance: System, priority: int = 0) -> None:
     Processors with higher priority will be called first.
     """
     system_instance.priority = priority
-    _systems.append(system_instance)
-    _systems.sort(key=lambda proc: proc.priority, reverse=True)
+    systems.append(system_instance)
+    systems.sort(key=lambda sys: sys.priority, reverse=True)
 
 def remove_system(system_type: _Type[System]) -> None:
     """Remove a Processor from the World, by type.
@@ -133,9 +133,9 @@ def remove_system(system_type: _Type[System]) -> None:
         self.world.remove_processor(my_processor_instance)
 
     """
-    for system in _systems:
+    for system in systems:
         if type(system) is system_type:
-            _systems.remove(system)
+            systems.remove(system)
 
 def get_system(system_type: _Type[System]) -> _Optional[System]:
     """Get a Processor instance, by type.
@@ -144,7 +144,7 @@ def get_system(system_type: _Type[System]) -> _Optional[System]:
     useful in certain situations, such as wanting to call a method on a
     Processor, from within another Processor.
     """
-    for system in _systems:
+    for system in systems:
         if type(system) is system_type:
             return system
     else:
