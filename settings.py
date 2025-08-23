@@ -9,5 +9,6 @@ class Singltone:
         return cls._instance
 
 settings = Singltone()
+settings.development_mode = True
 settings.GAME = "load"
 settings.BoardSize = 4

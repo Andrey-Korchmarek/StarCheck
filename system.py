@@ -1,4 +1,5 @@
 import esper
+from esper import Processor as _Processor
 from typing import Any as _Any
 from typing import List as _List
 from typing import Type as _Type
@@ -30,9 +31,9 @@ class System:
     """
 
     priority = 0
-    sys_processors: _List[esper.Processor] = []
+    sys_processors: _List[_Processor] = []
 
-    def add_processor(self, processor_instance: esper.Processor, priority: int = 0) -> None:
+    def add_processor(self, processor_instance: _Processor, priority: int = 0) -> None:
         """Add a Processor instance to the current World.
 
         Add a Processor instance to the world (subclass of
@@ -45,7 +46,7 @@ class System:
         self.sys_processors.append(processor_instance)
         self.sys_processors.sort(key=lambda proc: proc.priority, reverse=True)
 
-    def remove_processor(self, processor_type: _Type[esper.Processor]) -> None:
+    def remove_processor(self, processor_type: _Type[_Processor]) -> None:
         """Remove a Processor from the World, by type.
 
         Make sure to provide the class itself, **not** an instance. For example::
@@ -61,7 +62,7 @@ class System:
             if type(processor) is processor_type:
                 self.sys_processors.remove(processor)
 
-    def get_processor(self, processor_type: _Type[esper.Processor]) -> _Optional[esper.Processor]:
+    def get_processor(self, processor_type: _Type[_Processor]) -> _Optional[_Processor]:
         """Get a Processor instance, by type.
 
         This function returns a Processor instance by type. This could be
