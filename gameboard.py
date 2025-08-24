@@ -83,24 +83,24 @@ def generate_coordinates(size):
                        for x in [np.dot(norm, np.array(point)) + l for norm, l in borders]])}
     return dict(solid=solid, hollow=hollow)
 
-import render
+from render import Renderable, Size, Hidden
 
 def create_gameboard(size):
-    border = create_entity(render.Renderable(position=Vec3(0, 0, 0),
+    border = create_entity(Renderable(position=Vec3(0, 0, 0),
                                              model="assets/models/Solid",
                                              color=color.gray,
                                              alpha=0.2,
                                              scale=size),
-                           render.Size(size))
+                           Size(size))
     coordinates = generate_coordinates(size)
     color_calc = {0: color.gray, 2: color.red, 6: color.green, 4: color.blue}
     for el in coordinates["solid"]:
         clr = int(sum(el) % 8)
-        create_entity(render.Renderable(position=el,
+        create_entity(Renderable(position=el,
                                         model="assets/models/Cell",
                                         color=color_calc[clr],
                                         visible=False),
-                      render.Hidden())
+                      Hidden())
 
 if __name__ == '__main__':
     pass

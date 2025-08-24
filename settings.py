@@ -11,4 +11,4 @@ class Singltone:
 settings = Singltone()
 settings.development_mode = True
 settings.GAME = "load"
-settings.BoardSize = 4
+settings.BoardSize = 2

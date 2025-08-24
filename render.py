@@ -6,6 +6,7 @@ class Renderable:
         self.args = args
         self.kwargs = dict(position=Vec3(0, 0, 0),
                            model="sphere",
+                           texture=None,
                            color=color.white,
                            alpha=1.0,
                            scale=1,
@@ -30,6 +31,7 @@ class RenderProcessor(Processor):
         for ent, rend in get_component(Renderable):
             rend.rendering = Entity(position=rend.kwargs.get('position'),
                                     model=rend.kwargs.get('model'),
+                                    texture=rend.kwargs.get('texture'),
                                     color=rend.kwargs.get('color'),
                                     alpha=rend.kwargs.get('alpha'),
                                     scale=rend.kwargs.get('scale'),
