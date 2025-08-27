@@ -9,8 +9,12 @@ class Renderable:
                            texture=None,
                            color=color.white,
                            alpha=1.0,
+                           rotation=(0,0,0),
                            scale=1,
-                           visible=True)
+                           visible=True,
+                           collider=None,
+                           collision=False,
+                           on_click=todo_nothing)
         self.kwargs.update(kwargs)
         self.rendering: Entity = None
 
@@ -34,8 +38,12 @@ class RenderProcessor(Processor):
                                     texture=rend.kwargs.get('texture'),
                                     color=rend.kwargs.get('color'),
                                     alpha=rend.kwargs.get('alpha'),
+                                    rotation=rend.kwargs.get('rotation'),
                                     scale=rend.kwargs.get('scale'),
-                                    visible=rend.kwargs.get('visible'))
+                                    visible=rend.kwargs.get('visible'),
+                                    collider=rend.kwargs.get('collider'),
+                                    collision=rend.kwargs.get('collision'),
+                                    on_click=rend.kwargs.get('on_click'))
         set_handler("tab", self.showorhide_board)
         set_handler("plus_size", self.plus_size)
         set_handler("minus_size", self.minus_size)

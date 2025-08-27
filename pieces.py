@@ -172,16 +172,33 @@ class Attack:
 class Destroy:
     destroy_mask: str = ''.zfill(92)
 
+active_unit = None
+
+def select(ent):
+    global active_unit
+    if ent == active_unit:
+        print('Not changed')
+        return
+    else:
+        print('Previous selected: ', active_unit)
+        active_unit = ent
+        print('New selected: ', active_unit)
+
 from render import Renderable
 
 def create_start_pieces(size):
     for side in startingPositionOfPieces[size].values():
         for pos, id, c in side:
-            create_entity(
-                Renderable(position=pos, scale=sqrt(3), texture=pieceFormsValues[id]['texture']),
+            ent = create_entity(
                 Piece(type_id=id, type_symbol=pieceFormsValues[id]['symbol'], type_name=pieceFormsValues[id]['name']),
                 Side(c),
                 Walk(walk_mask=pieceFormsValues[id]['walk_mask']),
                 Attack(attack_mask=pieceFormsValues[id]['attack_mask']),
                 Destroy(destroy_mask=pieceFormsValues[id]['destroy_mask'])
             )
+            add_component(ent,
+                          Renderable(position=pos, scale=sqrt(3), texture=pieceFormsValues[id]['texture'],
+                                     rotation=(-45, 180, -45) if c == BLACK else (-45, 0, -45),
+                                     collider='sphere', collision=True,
+                                     on_click=lambda: select(ent)))
+

@@ -4,6 +4,9 @@ from esper import *
 from system import *
 from ursina import *
 
+def todo_nothing():
+    pass
+
 import gameboard
 import render
 import pieces
