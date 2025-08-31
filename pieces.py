@@ -1,4 +1,7 @@
 from __init__ import *
+import core
+import render
+from itertools import chain
 
 """
 Любое действие фигур ограничено клетками поля.
@@ -139,6 +142,25 @@ pieceFormsValues = {
 SIDE = [WHITE, BLACK, HOLE] = ['♙', '♟︎', '●']
 SIDE_NAMES = ["black", "white", "hole"]
 
+VECTORS = [
+    (4, 0, 0), (0, 4, 0), (0, 0, 4),  # square faces
+    (2, 2, 2), (2, 2, -2), (2, -2, 2), (-2, 2, 2),  # hexagonal faces
+    (4, 4, 0), (4, 0, 4), (0, 4, 4),  # near hex-hex edges
+    (4, -4, 0), (-4, 0, 4), (0, 4, -4),  # distant hex-hex edges
+    (16, 4, 4), (16, -4, 4), (16, -4, -4), (16, 4, -4),  # square-hex edges X
+    (4, 16, 4), (-4, 16, 4), (-4, 16, -4), (4, 16, -4),  # square-hex edges Y
+    (4, 4, 16), (4, -4, 16), (-4, -4, 16), (-4, 4, 16),  # square-hex edges Z
+    (8, 4, 0), (8, 0, 4), (8, -4, 0), (8, 0, -4),  # vertexes X
+    (0, 8, 4), (4, 8, 0), (0, 8, -4), (-4, 8, 0),  # vertexes Y
+    (4, 0, 8), (0, 4, 8), (-4, 0, 8), (0, -4, 8),  # vertexes Z
+    (6, 2, 2), (6, 2, -2), (6, -2, 2), (2, 6, 2), (2, 6, -2), (-2, 6, 2), (2, 2, 6), (2, -2, 6), (-2, 2, 6),  # knight
+]
+
+STEPS = {
+    WHITE: list(chain.from_iterable([[Vec3(x), Vec3(x) * (-1)] for x in VECTORS])),
+    BLACK: list(chain.from_iterable([[Vec3(x) * (-1), Vec3(x)] for x in VECTORS]))
+}
+
 startingPositionOfPieces = {
     2: {
         WHITE: [(Vec3(x), formId, WHITE) for x, formId in zip(
@@ -147,8 +169,17 @@ startingPositionOfPieces = {
         BLACK: [(Vec3(x), formId, BLACK) for x, formId in zip(
             [(-2, -2, -2), (-4, 0, 0), (0, -4, 0), (0, 0, -4), (-2, 2, -2), (-2, -2, 2), (2, -2, -2)],
             [12, 6, 5, 4, 3, 2, 1])],
+    },
+    3: {
+        WHITE: [(Vec3(x), formId, WHITE) for x, formId in zip(
+            [(2, 2, 2), ],
+            [12])],
+        BLACK: [(Vec3(x), formId, BLACK) for x, formId in zip(
+            [(-2, -2, -2), ],
+            [12])],
     }
 }
+
 
 @component
 class Piece:
@@ -156,49 +187,87 @@ class Piece:
     type_symbol: str = ''
     type_name: str = 'None'
 
+
 @component
 class Side:
     side: str = None
 
+
 @component
-class Walk:
+class Move:
     walk_mask: str = ''.zfill(92)
-
-@component
-class Attack:
     attack_mask: str = ''.zfill(92)
-
-@component
-class Destroy:
     destroy_mask: str = ''.zfill(92)
 
 active_unit = None
 
+
+@component
+class Selected:
+    color = color.green
+
+
+@component
+class Nonactive:
+    color = color.white
+
+
 def select(ent):
     global active_unit
     if ent == active_unit:
-        print('Not changed')
         return
     else:
-        print('Previous selected: ', active_unit)
+        if None != active_unit:
+            remove_component(active_unit, Selected)
+            add_component(active_unit, Nonactive())
         active_unit = ent
-        print('New selected: ', active_unit)
+        add_component(active_unit, Selected())
+        dispatch_event("change selection")
 
-from render import Renderable
 
 def create_start_pieces(size):
     for side in startingPositionOfPieces[size].values():
         for pos, id, c in side:
-            ent = create_entity(
-                Piece(type_id=id, type_symbol=pieceFormsValues[id]['symbol'], type_name=pieceFormsValues[id]['name']),
-                Side(c),
-                Walk(walk_mask=pieceFormsValues[id]['walk_mask']),
-                Attack(attack_mask=pieceFormsValues[id]['attack_mask']),
-                Destroy(destroy_mask=pieceFormsValues[id]['destroy_mask'])
-            )
+            settings.FEN = pieceFormsValues[id]['symbol'].upper() if c == WHITE else pieceFormsValues[id]['symbol']
+            ent = create_entity(core.Position(pos),
+                                Piece(type_id=id, type_symbol=pieceFormsValues[id]['symbol'],
+                                      type_name=pieceFormsValues[id]['name']),
+                                Side(c),
+                                Move(walk_mask=pieceFormsValues[id]['walk_mask'],
+                                     attack_mask=pieceFormsValues[id]['attack_mask'],
+                                     destroy_mask=pieceFormsValues[id]['destroy_mask'])
+                                )
             add_component(ent,
-                          Renderable(position=pos, scale=sqrt(3), texture=pieceFormsValues[id]['texture'],
+                          render.Renderable(position=pos, scale=sqrt(3), texture=pieceFormsValues[id]['texture'],
                                      rotation=(-45, 180, -45) if c == BLACK else (-45, 0, -45),
                                      collider='sphere', collision=True,
-                                     on_click=lambda: select(ent)))
+                                     on_click=lambda e=ent: select(e)))
+            settings.EFEN['PIECES'][pos] = ent
 
+
+class MovementProcessor(Processor):
+    def __init__(self):
+        set_handler("walk needed", self.walk_generate)
+
+    def walk_generate(self):
+        for ent, nucl in get_component(render.Nucleus):
+            nucl.enabled = False
+        for vector, sign in zip(STEPS[try_component(active_unit, Side).side],
+                                try_component(active_unit, Move).walk_mask):
+            match sign:
+                case '0':
+                    continue
+                case '1':
+                    new = try_component(active_unit, core.Position).position + vector
+                    if new not in settings.EFEN['PIECES'].keys() and new in settings.EFEN['NUCLEUS'].keys():
+                        try_component(settings.EFEN['NUCLEUS'][new], render.Nucleus).enabled = True
+                case 'I':
+                    count = 1
+                    new = try_component(active_unit, core.Position).position + vector
+                    while new not in settings.EFEN['PIECES'].keys() and new in settings.EFEN['NUCLEUS'].keys():
+                        try_component(settings.EFEN['NUCLEUS'][new], render.Nucleus).enabled = True
+                        count += 1
+                        new = try_component(active_unit, core.Position).position + vector * count
+
+    def process(self):
+        pass

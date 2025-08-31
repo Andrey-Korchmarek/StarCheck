@@ -1,4 +1,5 @@
 from __init__ import *
+import pieces
 
 
 class Renderable:
@@ -14,15 +15,19 @@ class Renderable:
                            visible=True,
                            collider=None,
                            collision=False,
-                           on_click=todo_nothing)
+                           on_click=todo_nothing,
+                           enabled=True)
         self.kwargs.update(kwargs)
         self.rendering: Entity = None
 
 
 @component
-class Hidden:
+class Cell:
     visible: bool = False
 
+@component
+class Nucleus:
+    enabled=False
 
 @component
 class Size:
@@ -43,16 +48,18 @@ class RenderProcessor(Processor):
                                     visible=rend.kwargs.get('visible'),
                                     collider=rend.kwargs.get('collider'),
                                     collision=rend.kwargs.get('collision'),
-                                    on_click=rend.kwargs.get('on_click'))
+                                    on_click=rend.kwargs.get('on_click'),
+                                    enabled=rend.kwargs.get('enabled'))
         set_handler("tab", self.showorhide_board)
         set_handler("plus_size", self.plus_size)
         set_handler("minus_size", self.minus_size)
+        set_handler("change selection", self.change_selection)
         input_handler.input = self.keyboard_input
         # window.fullscreen = True
         EditorCamera()
 
     def showorhide_board(self):
-        for ent, [rend, hide] in get_components(Renderable, Hidden):
+        for ent, [rend, hide] in get_components(Renderable, Cell):
             hide.visible = not hide.visible
             rend.rendering.visible = hide.visible
 
@@ -66,10 +73,17 @@ class RenderProcessor(Processor):
             sz.size -= 1
             rend.rendering.scale = sz.size
 
+    def change_selection(self):
+        for ent, [rend, na] in get_components(Renderable, pieces.Nonactive):
+            rend.rendering.color = na.color
+        for ent, [rend, act] in get_components(Renderable, pieces.Selected):
+            rend.rendering.color = act.color
+        dispatch_event("walk needed")
+
     def keyboard_input(self, key):
         combined_key = input_handler.get_combined_key(key)
         if combined_key == 'shift+escape':
-            quit()
+            settings.GAME = "stop"
         if key == 'e':
             esper.dispatch_event("plus_size")
         if key == 'q':
@@ -98,7 +112,9 @@ class RenderProcessor(Processor):
             held_keys[key] = 1
 
     def process(self):
-        self.render.run()
+        for ent, [rend, nuc] in get_components(Renderable, Nucleus):
+            rend.rendering.enabled = nuc.enabled
+        self.render.step()
 
 if __name__ == '__main__':
     pass

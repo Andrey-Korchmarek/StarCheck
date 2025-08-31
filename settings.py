@@ -12,3 +12,8 @@ settings = Singltone()
 settings.development_mode = True
 settings.GAME = "load"
 settings.BoardSize = 2
+settings.FEN = dict()
+settings.EFEN = dict(
+    NUCLEUS = dict(),
+    PIECES = dict()
+)

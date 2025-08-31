@@ -1,5 +1,21 @@
 from __init__ import *
 
+funcs = []
+
+for i in range(5):
+    f = lambda: print(i)
+    funcs.append(f)
+
+for f in funcs:
+    f()
+
+
+
+
+
+
+
+
 @component
 class TestComponent:
     msg: str = "Default message."
