@@ -183,6 +183,7 @@ startingPositionOfPieces = {
 
 @component
 class Piece:
+    color = color.gray
     type_id: int = 0
     type_symbol: str = ''
     type_name: str = 'None'
@@ -199,31 +200,33 @@ class Move:
     attack_mask: str = ''.zfill(92)
     destroy_mask: str = ''.zfill(92)
 
-active_unit = None
-
-
 @component
 class Selected:
     color = color.green
-
 
 @component
 class Nonactive:
     color = color.white
 
+@component
+class Walkable:
+    color = color.yellow
 
-def select(ent):
-    global active_unit
-    if ent == active_unit:
-        return
-    else:
-        if None != active_unit:
-            remove_component(active_unit, Selected)
-            add_component(active_unit, Nonactive())
-        active_unit = ent
-        add_component(active_unit, Selected())
-        dispatch_event("change selection")
+@component
+class UnderAttack:
+    color = color.orange
 
+@component
+class Captured:
+    pass
+
+@component
+class UnderDestroy:
+    color = color.red
+
+@component
+class Destroyed:
+    pass
 
 def create_start_pieces(size):
     for side in startingPositionOfPieces[size].values():
@@ -235,39 +238,123 @@ def create_start_pieces(size):
                                 Side(c),
                                 Move(walk_mask=pieceFormsValues[id]['walk_mask'],
                                      attack_mask=pieceFormsValues[id]['attack_mask'],
-                                     destroy_mask=pieceFormsValues[id]['destroy_mask'])
-                                )
-            add_component(ent,
-                          render.Renderable(position=pos, scale=sqrt(3), texture=pieceFormsValues[id]['texture'],
-                                     rotation=(-45, 180, -45) if c == BLACK else (-45, 0, -45),
-                                     collider='sphere', collision=True,
-                                     on_click=lambda e=ent: select(e)))
+                                     destroy_mask=pieceFormsValues[id]['destroy_mask']),
+                                render.Renderable(position=pos, scale=sqrt(3),
+                                                  texture=pieceFormsValues[id]['texture'],
+                                                  rotation=(-45, 180, -45) if c == BLACK else (-45, 0, -45),
+                                                  collider='sphere', collision=True))
             settings.EFEN['PIECES'][pos] = ent
-
 
 class MovementProcessor(Processor):
     def __init__(self):
+        set_handler("select", self.select)
         set_handler("walk needed", self.walk_generate)
+        set_handler("walk", self.walk)
+        set_handler("attack needed", self.attack_generate)
+        set_handler("attack", self.attack)
+        set_handler("destroy needed", self.destroy_generate)
+        set_handler("destroy", self.destroy)
+
+    active_unit = None
+
+    def select(self, new):
+        if new == self.active_unit:
+            return
+        else:
+            if None != self.active_unit:
+                remove_component(self.active_unit, Selected)
+                add_component(self.active_unit, Nonactive())
+            self.active_unit = new
+            if None != self.active_unit:
+                add_component(self.active_unit, Selected())
+            dispatch_event("change selection")
 
     def walk_generate(self):
-        for ent, nucl in get_component(render.Nucleus):
-            nucl.enabled = False
-        for vector, sign in zip(STEPS[try_component(active_unit, Side).side],
-                                try_component(active_unit, Move).walk_mask):
+        if None == self.active_unit:
+            return
+        for vector, sign in zip(STEPS[try_component(self.active_unit, Side).side],
+                                try_component(self.active_unit, Move).walk_mask):
             match sign:
                 case '0':
                     continue
                 case '1':
-                    new = try_component(active_unit, core.Position).position + vector
+                    new = try_component(self.active_unit, core.Position).position + vector
                     if new not in settings.EFEN['PIECES'].keys() and new in settings.EFEN['NUCLEUS'].keys():
                         try_component(settings.EFEN['NUCLEUS'][new], render.Nucleus).enabled = True
                 case 'I':
                     count = 1
-                    new = try_component(active_unit, core.Position).position + vector
+                    new = try_component(self.active_unit, core.Position).position + vector
                     while new not in settings.EFEN['PIECES'].keys() and new in settings.EFEN['NUCLEUS'].keys():
                         try_component(settings.EFEN['NUCLEUS'][new], render.Nucleus).enabled = True
                         count += 1
-                        new = try_component(active_unit, core.Position).position + vector * count
+                        new = try_component(self.active_unit, core.Position).position + vector * count
+
+    def walk(self, new):
+        old_pos = try_component(self.active_unit, core.Position).position
+        new_pos = try_component(new, core.Position).position
+        try_component(self.active_unit, core.Position).position = new_pos
+        settings.EFEN['PIECES'][new_pos] = settings.EFEN['PIECES'].pop(old_pos)
+        self.select(None)
+
+    def attack_generate(self):
+        if None == self.active_unit:
+            return
+        for vector, sign in zip(STEPS[try_component(self.active_unit, Side).side],
+                                try_component(self.active_unit, Move).attack_mask):
+            match sign:
+                case '0':
+                    continue
+                case '1':
+                    new = try_component(self.active_unit, core.Position).position + vector
+                    if new in settings.EFEN['PIECES'].keys():
+                        add_component(settings.EFEN['PIECES'][new], UnderAttack())
+                case 'I':
+                    count = 1
+                    new = try_component(self.active_unit, core.Position).position + vector
+                    while new in settings.EFEN['NUCLEUS'].keys():
+                        if new in settings.EFEN['PIECES'].keys():
+                            add_component(settings.EFEN['PIECES'][new], UnderAttack())
+                            break
+                        else:
+                            count += 1
+                            new = try_component(self.active_unit, core.Position).position + vector * count
+
+    def attack(self, new):
+        old_pos = try_component(self.active_unit, core.Position).position
+        new_pos = try_component(new, core.Position).position
+        add_component(new, Captured())
+        try_component(self.active_unit, core.Position).position = new_pos
+        settings.EFEN['PIECES'][new_pos] = settings.EFEN['PIECES'].pop(old_pos)
+        self.select(None)
+
+    def destroy_generate(self):
+        if None == self.active_unit:
+            return
+        for vector, sign in zip(STEPS[try_component(self.active_unit, Side).side],
+                                try_component(self.active_unit, Move).destroy_mask):
+            match sign:
+                case '0':
+                    continue
+                case '1':
+                    new = try_component(self.active_unit, core.Position).position + vector
+                    if new in settings.EFEN['PIECES'].keys():
+                        add_component(settings.EFEN['PIECES'][new], UnderDestroy())
+                case 'I':
+                    count = 1
+                    new = try_component(self.active_unit, core.Position).position + vector
+                    while new in settings.EFEN['NUCLEUS'].keys():
+                        if new in settings.EFEN['PIECES'].keys():
+                            add_component(settings.EFEN['PIECES'][new], UnderDestroy())
+                            break
+                        else:
+                            count += 1
+                            new = try_component(self.active_unit, core.Position).position + vector * count
+
+    def destroy(self, new):
+        new_pos = try_component(new, core.Position).position
+        add_component(new, Destroyed())
+        settings.EFEN['PIECES'].pop(new_pos)
+        self.select(None)
 
     def process(self):
         pass

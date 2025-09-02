@@ -54,6 +54,8 @@ level = {
     2: 2,
     3: 4
 }
+
+
 def generate_coordinates(size):
     borders = [(norm / np.linalg.norm(norm), np.linalg.norm(norm * size)) for norm in NPNRMLS]
     acr = 0.1
@@ -78,6 +80,7 @@ def generate_coordinates(size):
                        for x in [np.dot(norm, np.array(point)) + l for norm, l in borders]])}
     return dict(solid=solid, hollow=hollow)
 
+
 def create_gameboard(size):
     border = create_entity(render.Renderable(position=Vec3(0, 0, 0),
                                              model="assets/models/Solid",
@@ -86,21 +89,22 @@ def create_gameboard(size):
                                              scale=size),
                            render.Size(size))
     coordinates = generate_coordinates(size)
-    color_calc = {0: color.gray, 2: color.red, 6: color.green, 4: color.blue}
+    color_calc = {0: color.white, 2: color.red, 6: color.green, 4: color.blue}
     for el in coordinates["solid"]:
         settings.FEN[el] = None
         clr = int(sum(el) % 8)
         create_entity(render.Cell(),
                       render.Renderable(position=el,
-                                 model="assets/models/Cell",
-                                 color=color_calc[clr],
-                                 visible=False))
+                                        model="assets/models/Cell",
+                                        color=color_calc[clr],
+                                        visible=False))
         ent = create_entity(core.Position(el), render.Nucleus(),
                             render.Renderable(position=el,
-                                       color=color.yellow,
-                                       collider='sphere', collision=True,
-                                       enabled=False))
+                                              color=color.yellow,
+                                              collider='sphere', collision=True,
+                                              enabled=False))
         settings.EFEN['NUCLEUS'][el] = ent
+
 
 if __name__ == '__main__':
     pass
