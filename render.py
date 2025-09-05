@@ -1,7 +1,6 @@
 from __init__ import *
 import pieces
 import core
-from pieces import Piece
 
 
 class Renderable:
@@ -56,16 +55,12 @@ class RenderProcessor(Processor):
                                     on_click=rend.kwargs.get('on_click'),
                                     on_double_click=rend.kwargs.get('on_double_click'),
                                     enabled=rend.kwargs.get('enabled'))
-        for ent, [rend, nuc] in get_components(Renderable, Nucleus):
-            rend.rendering.on_double_click = lambda new=ent: dispatch_event("walk", new)
-        for ent, [rend, pic] in get_components(Renderable, pieces.Piece):
-            rend.rendering._on_click = lambda new=ent: dispatch_event("select", new)
         set_handler("tab", self.showorhide_board)
         set_handler("plus_size", self.plus_size)
         set_handler("minus_size", self.minus_size)
         set_handler("change selection", self.change_selection)
         input_handler.input = self.keyboard_input
-        # window.fullscreen = True
+        #window.fullscreen = True
         EditorCamera()
 
     def showorhide_board(self):
@@ -86,14 +81,19 @@ class RenderProcessor(Processor):
     def change_selection(self):
         for ent, nucl in get_component(Nucleus):
             nucl.enabled = False
+        for ent, wal in get_component(pieces.Walkable):
+            remove_component(ent, pieces.Walkable)
         for ent, att in get_component(pieces.UnderAttack):
             remove_component(ent, pieces.UnderAttack)
         for ent, des in get_component(pieces.UnderDestroy):
             remove_component(ent, pieces.UnderDestroy)
         for ent, [rend, na] in get_components(Renderable, pieces.Nonactive):
             rend.rendering.color = na.color
-        for ent, [rend, act] in get_components(Renderable, pieces.Selected):
-            rend.rendering.color = act.color
+        for ent, [rend, act, sd] in get_components(Renderable, pieces.Selected, pieces.Side):
+            if settings.active_player == sd.side:
+                rend.rendering.color = act.active
+            else:
+                rend.rendering.color = act.nonactive
 
     def keyboard_input(self, key):
         combined_key = input_handler.get_combined_key(key)
@@ -128,26 +128,45 @@ class RenderProcessor(Processor):
 
     def process(self):
         for ent, [rend, nuc] in get_components(Renderable, Nucleus):
+            rend.rendering.on_double_click = todo_nothing
             rend.rendering.enabled = nuc.enabled
         for ent, [rend, pic] in get_components(Renderable, pieces.Piece):
             if (not has_component(ent, pieces.Selected)
                     and not has_component(ent, pieces.UnderAttack)
                     and not has_component(ent, pieces.UnderDestroy)):
                 rend.rendering.color = pic.color
+                rend.rendering._on_click = lambda new=ent: dispatch_event("select", new)
                 rend.rendering.on_double_click = todo_nothing
+        for ent, [rend, wal] in get_components(Renderable, pieces.Walkable):
+            if None != settings.active_unit:
+                if settings.active_player == try_component(settings.active_unit, pieces.Side).side:
+                    rend.rendering.color = wal.active
+                    rend.rendering.on_double_click = lambda new=ent: dispatch_event("walk", new)
+                    rend.rendering.enabled = True
+                else:
+                    rend.rendering.color = wal.nonactive
+                    rend.rendering.enabled = True
         for ent, [rend, att] in get_components(Renderable, pieces.UnderAttack):
-            rend.rendering.color = att.color
-            rend.rendering._on_click = todo_nothing
-            rend.rendering.on_double_click = lambda new=ent: dispatch_event("attack", new)
+            if None != settings.active_unit:
+                if settings.active_player == try_component(settings.active_unit, pieces.Side).side:
+                    rend.rendering.color = att.active
+                    rend.rendering._on_click = todo_nothing
+                    rend.rendering.on_double_click = lambda new=ent: dispatch_event("attack", new)
+                else:
+                    rend.rendering.color = att.nonactive
         for ent, [rend, des] in get_components(Renderable, pieces.UnderDestroy):
-            rend.rendering.color = des.color
-            rend.rendering._on_click = todo_nothing
-            rend.rendering.on_double_click = lambda new=ent: dispatch_event("destroy", new)
+            if None != settings.active_unit:
+                if settings.active_player == try_component(settings.active_unit, pieces.Side).side:
+                    rend.rendering.color = des.active
+                    rend.rendering._on_click = todo_nothing
+                    rend.rendering.on_double_click = lambda new=ent: dispatch_event("destroy", new)
+                else:
+                    rend.rendering.color = des.nonactive
         for ent, [rend, cap] in get_components(Renderable, pieces.Captured):
             rend.rendering.disable()
         for ent, [rend, cap] in get_components(Renderable, pieces.Destroyed):
             rend.rendering.disable()
-        for ent, [rend, pos, pic] in get_components(Renderable, core.Position, Piece):
+        for ent, [rend, pos, pic] in get_components(Renderable, core.Position, pieces.Piece):
             rend.rendering.position = pos.position
         self.render.step()
 

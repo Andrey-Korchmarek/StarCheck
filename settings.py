@@ -1,4 +1,6 @@
 #
+SIDE = [WHITE, BLACK, HOLE] = ['♙', '♟︎', '●']
+
 class Singltone:
 
     _instance = None
@@ -17,3 +19,5 @@ settings.EFEN = dict(
     NUCLEUS = dict(),
     PIECES = dict()
 )
+settings.active_player = WHITE
+settings.active_unit = None

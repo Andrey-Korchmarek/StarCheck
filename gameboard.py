@@ -100,7 +100,7 @@ def create_gameboard(size):
                                         visible=False))
         ent = create_entity(core.Position(el), render.Nucleus(),
                             render.Renderable(position=el,
-                                              color=color.yellow,
+                                              color=color.white,
                                               collider='sphere', collision=True,
                                               enabled=False))
         settings.EFEN['NUCLEUS'][el] = ent

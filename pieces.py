@@ -30,7 +30,7 @@ pieceFormsValues = {
     1: {
         "symbol": 'a',
         "name": "warrior",
-        "texture": "assets/textures/stub",
+        "texture": "assets/textures/stub(1)",
         "walk_mask": P_means_PAUNS[:14] + ''.zfill(92 - 14),
         "attack_mask": ''.zfill(25) + P_means_PAUNS[25:50] + ''.zfill(92 - 50),
         "destroy_mask": ''.zfill(50) + P_means_PAUNS[50:74] + ''.zfill(92 - 74),
@@ -39,7 +39,7 @@ pieceFormsValues = {
     2: {
         "symbol": "e",
         "name": "soldier",
-        "texture": "assets/textures/stub",
+        "texture": "assets/textures/stub(2)",
         "walk_mask": P_means_PAUNS[:14] + ''.zfill(92 - 14),
         "attack_mask": ''.zfill(50) + P_means_PAUNS[50:74] + ''.zfill(92 - 74),
         "destroy_mask": ''.zfill(25) + P_means_PAUNS[25:50] + ''.zfill(92 - 50),
@@ -48,7 +48,7 @@ pieceFormsValues = {
     3: {
         "symbol": "f",
         "name": 'fighter',
-        "texture": "assets/textures/stub",
+        "texture": "assets/textures/stub(3)",
         "walk_mask": ''.zfill(14) + ''.zfill(25 - 14) + P_means_PAUNS[25:50] + ''.zfill(92 - 50),
         "attack_mask": ''.zfill(50) + P_means_PAUNS[50:74] + ''.zfill(92 - 74),
         "destroy_mask": P_means_PAUNS[:14] + ''.zfill(92 - 14),
@@ -57,7 +57,7 @@ pieceFormsValues = {
     4: {
         "symbol": "y",
         "name": 'faerie',
-        "texture": "assets/textures/stub",
+        "texture": "assets/textures/stub(4)",
         "walk_mask": ''.zfill(14) + ''.zfill(25 - 14) + P_means_PAUNS[25:50] + ''.zfill(92 - 50),
         "attack_mask": P_means_PAUNS[:14] + ''.zfill(92 - 14),
         "destroy_mask": ''.zfill(50) + P_means_PAUNS[50:74] + ''.zfill(92 - 74),
@@ -66,7 +66,7 @@ pieceFormsValues = {
     5: {
         "symbol": "m",
         "name": 'imp',
-        "texture": "assets/textures/stub",
+        "texture": "assets/textures/stub(5)",
         "walk_mask": ''.zfill(50) + P_means_PAUNS[50:74] + ''.zfill(92 - 74),
         "attack_mask": P_means_PAUNS[:14] + ''.zfill(92 - 14),
         "destroy_mask": ''.zfill(25) + P_means_PAUNS[25:50] + ''.zfill(92 - 50),
@@ -75,7 +75,7 @@ pieceFormsValues = {
     6: {
         "symbol": "v",
         "name": 'thopter',
-        "texture": "assets/textures/stub",
+        "texture": "assets/textures/stub(6)",
         "walk_mask": ''.zfill(50) + P_means_PAUNS[50:74] + ''.zfill(92 - 74),
         "attack_mask": ''.zfill(25) + P_means_PAUNS[25:50] + ''.zfill(92 - 50),
         "destroy_mask": P_means_PAUNS[:14] + ''.zfill(92 - 14),
@@ -202,19 +202,22 @@ class Move:
 
 @component
 class Selected:
-    color = color.green
+    active = color.green
+    nonactive = color.olive
 
 @component
 class Nonactive:
-    color = color.white
+    color = color.gray
 
 @component
 class Walkable:
-    color = color.yellow
+    active = color.gold
+    nonactive = color.lime
 
 @component
 class UnderAttack:
-    color = color.orange
+    active = color.orange
+    nonactive = color.peach
 
 @component
 class Captured:
@@ -222,7 +225,8 @@ class Captured:
 
 @component
 class UnderDestroy:
-    color = color.red
+    active = color.red
+    nonactive = color.pink
 
 @component
 class Destroyed:
@@ -241,7 +245,7 @@ def create_start_pieces(size):
                                      destroy_mask=pieceFormsValues[id]['destroy_mask']),
                                 render.Renderable(position=pos, scale=sqrt(3),
                                                   texture=pieceFormsValues[id]['texture'],
-                                                  rotation=(-45, 180, -45) if c == BLACK else (-45, 0, -45),
+                                                  rotation=(45, 0, 45) if c == BLACK else (-135, 0, -135),
                                                   collider='sphere', collision=True))
             settings.EFEN['PIECES'][pos] = ent
 
@@ -255,105 +259,122 @@ class MovementProcessor(Processor):
         set_handler("destroy needed", self.destroy_generate)
         set_handler("destroy", self.destroy)
 
-    active_unit = None
+    #active_player = WHITE
+    #active_unit = None
 
     def select(self, new):
-        if new == self.active_unit:
-            return
-        else:
-            if None != self.active_unit:
-                remove_component(self.active_unit, Selected)
-                add_component(self.active_unit, Nonactive())
-            self.active_unit = new
-            if None != self.active_unit:
-                add_component(self.active_unit, Selected())
+        if None != settings.active_unit:
+            if None != new:
+                if new != settings.active_unit:
+                    remove_component(settings.active_unit, Selected)
+                    add_component(settings.active_unit, Nonactive())
+                    settings.active_unit = new
+                    add_component(settings.active_unit, Selected())
+            else:
+                remove_component(settings.active_unit, Selected)
+                add_component(settings.active_unit, Nonactive())
+                settings.active_unit = new
             dispatch_event("change selection")
+        else:
+            if None != new:
+                settings.active_unit = new
+                add_component(settings.active_unit, Selected())
+                dispatch_event("change selection")
 
     def walk_generate(self):
-        if None == self.active_unit:
+        if None == settings.active_unit:
             return
-        for vector, sign in zip(STEPS[try_component(self.active_unit, Side).side],
-                                try_component(self.active_unit, Move).walk_mask):
+        for vector, sign in zip(STEPS[try_component(settings.active_unit, Side).side],
+                                try_component(settings.active_unit, Move).walk_mask):
             match sign:
                 case '0':
                     continue
                 case '1':
-                    new = try_component(self.active_unit, core.Position).position + vector
+                    new = try_component(settings.active_unit, core.Position).position + vector
                     if new not in settings.EFEN['PIECES'].keys() and new in settings.EFEN['NUCLEUS'].keys():
-                        try_component(settings.EFEN['NUCLEUS'][new], render.Nucleus).enabled = True
+                        add_component(settings.EFEN['NUCLEUS'][new], Walkable())
                 case 'I':
                     count = 1
-                    new = try_component(self.active_unit, core.Position).position + vector
+                    new = try_component(settings.active_unit, core.Position).position + vector
                     while new not in settings.EFEN['PIECES'].keys() and new in settings.EFEN['NUCLEUS'].keys():
-                        try_component(settings.EFEN['NUCLEUS'][new], render.Nucleus).enabled = True
+                        add_component(settings.EFEN['NUCLEUS'][new], Walkable())
                         count += 1
-                        new = try_component(self.active_unit, core.Position).position + vector * count
+                        new = try_component(settings.active_unit, core.Position).position + vector * count
 
     def walk(self, new):
-        old_pos = try_component(self.active_unit, core.Position).position
+        old_pos = try_component(settings.active_unit, core.Position).position
         new_pos = try_component(new, core.Position).position
-        try_component(self.active_unit, core.Position).position = new_pos
+        try_component(settings.active_unit, core.Position).position = new_pos
         settings.EFEN['PIECES'][new_pos] = settings.EFEN['PIECES'].pop(old_pos)
+        settings.active_player = BLACK if WHITE == settings.active_player else WHITE
         self.select(None)
 
     def attack_generate(self):
-        if None == self.active_unit:
+        if None == settings.active_unit:
             return
-        for vector, sign in zip(STEPS[try_component(self.active_unit, Side).side],
-                                try_component(self.active_unit, Move).attack_mask):
+        friends = try_component(settings.active_unit, Side).side
+        for vector, sign in zip(STEPS[try_component(settings.active_unit, Side).side],
+                                try_component(settings.active_unit, Move).attack_mask):
             match sign:
                 case '0':
                     continue
                 case '1':
-                    new = try_component(self.active_unit, core.Position).position + vector
+                    new = try_component(settings.active_unit, core.Position).position + vector
                     if new in settings.EFEN['PIECES'].keys():
-                        add_component(settings.EFEN['PIECES'][new], UnderAttack())
+                        if friends != try_component(settings.EFEN['PIECES'][new], Side).side:
+                            add_component(settings.EFEN['PIECES'][new], UnderAttack())
                 case 'I':
                     count = 1
-                    new = try_component(self.active_unit, core.Position).position + vector
+                    new = try_component(settings.active_unit, core.Position).position + vector
                     while new in settings.EFEN['NUCLEUS'].keys():
                         if new in settings.EFEN['PIECES'].keys():
-                            add_component(settings.EFEN['PIECES'][new], UnderAttack())
+                            if friends != try_component(settings.EFEN['PIECES'][new], Side).side:
+                                add_component(settings.EFEN['PIECES'][new], UnderAttack())
                             break
                         else:
                             count += 1
-                            new = try_component(self.active_unit, core.Position).position + vector * count
+                            new = try_component(settings.active_unit, core.Position).position + vector * count
 
     def attack(self, new):
-        old_pos = try_component(self.active_unit, core.Position).position
+        old_pos = try_component(settings.active_unit, core.Position).position
         new_pos = try_component(new, core.Position).position
         add_component(new, Captured())
-        try_component(self.active_unit, core.Position).position = new_pos
+        try_component(settings.active_unit, core.Position).position = new_pos
         settings.EFEN['PIECES'][new_pos] = settings.EFEN['PIECES'].pop(old_pos)
+        settings.active_player = BLACK if WHITE == settings.active_player else WHITE
         self.select(None)
 
     def destroy_generate(self):
-        if None == self.active_unit:
+        if None == settings.active_unit:
             return
-        for vector, sign in zip(STEPS[try_component(self.active_unit, Side).side],
-                                try_component(self.active_unit, Move).destroy_mask):
+        friends = try_component(settings.active_unit, Side).side
+        for vector, sign in zip(STEPS[try_component(settings.active_unit, Side).side],
+                                try_component(settings.active_unit, Move).destroy_mask):
             match sign:
                 case '0':
                     continue
                 case '1':
-                    new = try_component(self.active_unit, core.Position).position + vector
+                    new = try_component(settings.active_unit, core.Position).position + vector
                     if new in settings.EFEN['PIECES'].keys():
-                        add_component(settings.EFEN['PIECES'][new], UnderDestroy())
+                        if friends != try_component(settings.EFEN['PIECES'][new], Side).side:
+                            add_component(settings.EFEN['PIECES'][new], UnderDestroy())
                 case 'I':
                     count = 1
-                    new = try_component(self.active_unit, core.Position).position + vector
+                    new = try_component(settings.active_unit, core.Position).position + vector
                     while new in settings.EFEN['NUCLEUS'].keys():
                         if new in settings.EFEN['PIECES'].keys():
-                            add_component(settings.EFEN['PIECES'][new], UnderDestroy())
+                            if friends != try_component(settings.EFEN['PIECES'][new], Side).side:
+                                add_component(settings.EFEN['PIECES'][new], UnderDestroy())
                             break
                         else:
                             count += 1
-                            new = try_component(self.active_unit, core.Position).position + vector * count
+                            new = try_component(settings.active_unit, core.Position).position + vector * count
 
     def destroy(self, new):
         new_pos = try_component(new, core.Position).position
         add_component(new, Destroyed())
         settings.EFEN['PIECES'].pop(new_pos)
+        settings.active_player = BLACK if WHITE == settings.active_player else WHITE
         self.select(None)
 
     def process(self):
