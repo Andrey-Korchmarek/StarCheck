@@ -55,7 +55,7 @@ class RenderProcessor(Processor):
                                     on_click=rend.kwargs.get('on_click'),
                                     on_double_click=rend.kwargs.get('on_double_click'),
                                     enabled=rend.kwargs.get('enabled'))
-        set_handler("tab", self.showorhide_board)
+        set_handler("change board visible", self.showorhide_board)
         set_handler("plus_size", self.plus_size)
         set_handler("minus_size", self.minus_size)
         set_handler("change selection", self.change_selection)
@@ -104,7 +104,7 @@ class RenderProcessor(Processor):
         if key == 'q':
             esper.dispatch_event("minus_size")
         if key == 'tab':
-            esper.dispatch_event("tab")
+            esper.dispatch_event("change board visible")
         if key == 'w':
             dispatch_event("walk needed")
         if key == 's':
@@ -142,10 +142,10 @@ class RenderProcessor(Processor):
                 if settings.active_player == try_component(settings.active_unit, pieces.Side).side:
                     rend.rendering.color = wal.active
                     rend.rendering.on_double_click = lambda new=ent: dispatch_event("walk", new)
-                    rend.rendering.enabled = True
+                    rend.rendering.enabled = True #TODO Заменить этот костыль чем-то более элегантным
                 else:
                     rend.rendering.color = wal.nonactive
-                    rend.rendering.enabled = True
+                    rend.rendering.enabled = True #TODO Заменить этот костыль чем-то более элегантным
         for ent, [rend, att] in get_components(Renderable, pieces.UnderAttack):
             if None != settings.active_unit:
                 if settings.active_player == try_component(settings.active_unit, pieces.Side).side:

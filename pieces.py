@@ -1,3 +1,4 @@
+import settings
 from __init__ import *
 import core
 import render
@@ -14,7 +15,7 @@ from itertools import chain
 а ходят они только на 1 клетку и только вперёд, всего их 6 видов.
 """
 
-P_means_PAUNS = "01010101010101010101000000010101010101010101010101010101010101010101010101010101010101010101"
+P_means_PAUNS = "01010101010101000000000000010101010101010101010101010101010101010101010101010101010101010101"
 
 pieceFormsValues = {
     # Заглушка. Ничего не делает, без текстуры и имени
@@ -32,7 +33,7 @@ pieceFormsValues = {
         "name": "warrior",
         "texture": "assets/textures/stub(1)",
         "walk_mask": P_means_PAUNS[:14] + ''.zfill(92 - 14),
-        "attack_mask": ''.zfill(25) + P_means_PAUNS[25:50] + ''.zfill(92 - 50),
+        "attack_mask": ''.zfill(26) + P_means_PAUNS[26:50] + ''.zfill(92 - 50),
         "destroy_mask": ''.zfill(50) + P_means_PAUNS[50:74] + ''.zfill(92 - 74),
     },
     # Пешка №2, передвигается ортогонально, захватывает триагонально, стреляет диагонально
@@ -42,14 +43,14 @@ pieceFormsValues = {
         "texture": "assets/textures/stub(2)",
         "walk_mask": P_means_PAUNS[:14] + ''.zfill(92 - 14),
         "attack_mask": ''.zfill(50) + P_means_PAUNS[50:74] + ''.zfill(92 - 74),
-        "destroy_mask": ''.zfill(25) + P_means_PAUNS[25:50] + ''.zfill(92 - 50),
+        "destroy_mask": ''.zfill(26) + P_means_PAUNS[26:50] + ''.zfill(92 - 50),
     },
     # Пешка №3, передвигается диагонально, захватывает триагонально, стреляет ортогонально
     3: {
         "symbol": "f",
         "name": 'fighter',
         "texture": "assets/textures/stub(3)",
-        "walk_mask": ''.zfill(14) + ''.zfill(25 - 14) + P_means_PAUNS[25:50] + ''.zfill(92 - 50),
+        "walk_mask": ''.zfill(14) + ''.zfill(26 - 14) + P_means_PAUNS[26:50] + ''.zfill(92 - 50),
         "attack_mask": ''.zfill(50) + P_means_PAUNS[50:74] + ''.zfill(92 - 74),
         "destroy_mask": P_means_PAUNS[:14] + ''.zfill(92 - 14),
     },
@@ -58,7 +59,7 @@ pieceFormsValues = {
         "symbol": "y",
         "name": 'faerie',
         "texture": "assets/textures/stub(4)",
-        "walk_mask": ''.zfill(14) + ''.zfill(25 - 14) + P_means_PAUNS[25:50] + ''.zfill(92 - 50),
+        "walk_mask": ''.zfill(14) + ''.zfill(26 - 14) + P_means_PAUNS[26:50] + ''.zfill(92 - 50),
         "attack_mask": P_means_PAUNS[:14] + ''.zfill(92 - 14),
         "destroy_mask": ''.zfill(50) + P_means_PAUNS[50:74] + ''.zfill(92 - 74),
     },
@@ -69,7 +70,7 @@ pieceFormsValues = {
         "texture": "assets/textures/stub(5)",
         "walk_mask": ''.zfill(50) + P_means_PAUNS[50:74] + ''.zfill(92 - 74),
         "attack_mask": P_means_PAUNS[:14] + ''.zfill(92 - 14),
-        "destroy_mask": ''.zfill(25) + P_means_PAUNS[25:50] + ''.zfill(92 - 50),
+        "destroy_mask": ''.zfill(26) + P_means_PAUNS[26:50] + ''.zfill(92 - 50),
     },
     # Пешка №6, передвигается диагонально, захватывает триагонально, стреляет ортогонально
     6: {
@@ -77,7 +78,7 @@ pieceFormsValues = {
         "name": 'thopter',
         "texture": "assets/textures/stub(6)",
         "walk_mask": ''.zfill(50) + P_means_PAUNS[50:74] + ''.zfill(92 - 74),
-        "attack_mask": ''.zfill(25) + P_means_PAUNS[25:50] + ''.zfill(92 - 50),
+        "attack_mask": ''.zfill(26) + P_means_PAUNS[26:50] + ''.zfill(92 - 50),
         "destroy_mask": P_means_PAUNS[:14] + ''.zfill(92 - 14),
     },
     # Ладья, передвигается, захватывает и стреляет ортогонально на любое число клеток
@@ -94,9 +95,9 @@ pieceFormsValues = {
         "symbol": "x",
         "name": 'rummage',
         "texture": "stub",
-        "walk_mask": ''.zfill(25) + 'I' * (50 - 25) + ''.zfill(92 - 50),
-        "attack_mask": ''.zfill(25) + 'I' * (50 - 25) + ''.zfill(92 - 50),
-        "destroy_mask": ''.zfill(25) + 'I' * (50 - 25) + ''.zfill(92 - 50),
+        "walk_mask": ''.zfill(26) + 'I' * (50 - 26) + ''.zfill(92 - 50),
+        "attack_mask": ''.zfill(26) + 'I' * (50 - 26) + ''.zfill(92 - 50),
+        "destroy_mask": ''.zfill(26) + 'I' * (50 - 26) + ''.zfill(92 - 50),
     },
     # Рух, передвигается, захватывает и стреляет триагонально на любое число клеток
     9: {
@@ -122,9 +123,9 @@ pieceFormsValues = {
         "symbol": "o",
         "name": 'mercurial',
         "texture": "vertical",
-        "walk_mask": 'I' * 14 + ''.zfill(25 - 14) + 'I' * (74 - 25) + ''.zfill(92 - 74),
-        "attack_mask": 'I' * 14 + ''.zfill(25 - 14) + 'I' * (74 - 25) + ''.zfill(92 - 74),
-        "destroy_mask": 'I' * 14 + ''.zfill(25 - 14) + 'I' * (74 - 25) + ''.zfill(92 - 74),
+        "walk_mask": 'I' * 14 + ''.zfill(26 - 14) + 'I' * (74 - 26) + ''.zfill(92 - 74),
+        "attack_mask": 'I' * 14 + ''.zfill(26 - 14) + 'I' * (74 - 26) + ''.zfill(92 - 74),
+        "destroy_mask": 'I' * 14 + ''.zfill(26 - 14) + 'I' * (74 - 26) + ''.zfill(92 - 74),
     },
     # Король, передвигается, захватывает и стреляет на 1 клетку в любом одном направлении
     # Когда любая фигура противника получает возможность захватить или застрелить Короля, его Игроку объявляется ШАХ
@@ -133,9 +134,9 @@ pieceFormsValues = {
         "symbol": "s",
         "name": 'sage',
         "texture": "assets/textures/target",
-        "walk_mask": '1' * 14 + ''.zfill(25 - 14) + '1' * (74 - 25) + ''.zfill(92 - 74),
-        "attack_mask": '1' * 14 + ''.zfill(25 - 14) + '1' * (74 - 25) + ''.zfill(92 - 74),
-        "destroy_mask": '1' * 14 + ''.zfill(25 - 14) + '1' * (74 - 25) + ''.zfill(92 - 74),
+        "walk_mask": '1' * 14 + ''.zfill(26 - 14) + '1' * (74 - 26) + ''.zfill(92 - 74),
+        "attack_mask": '1' * 14 + ''.zfill(26 - 14) + '1' * (74 - 26) + ''.zfill(92 - 74),
+        "destroy_mask": '1' * 14 + ''.zfill(26 - 14) + '1' * (74 - 26) + ''.zfill(92 - 74),
     },
 }
 
@@ -245,12 +246,13 @@ def create_start_pieces(size):
                                      destroy_mask=pieceFormsValues[id]['destroy_mask']),
                                 render.Renderable(position=pos, scale=sqrt(3),
                                                   texture=pieceFormsValues[id]['texture'],
-                                                  rotation=(45, 0, 45) if c == BLACK else (-135, 0, -135),
+                                                  rotation=(45, 0, 45) if c == BLACK else (45, 0, -135),
                                                   collider='sphere', collision=True))
             settings.EFEN['PIECES'][pos] = ent
 
 class MovementProcessor(Processor):
     def __init__(self):
+        settings.active_player = WHITE
         set_handler("select", self.select)
         set_handler("walk needed", self.walk_generate)
         set_handler("walk", self.walk)

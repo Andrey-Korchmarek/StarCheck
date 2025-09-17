@@ -1,6 +1,4 @@
 #
-SIDE = [WHITE, BLACK, HOLE] = ['♙', '♟︎', '●']
-
 class Singltone:
 
     _instance = None
@@ -11,7 +9,9 @@ class Singltone:
         return cls._instance
 
 settings = Singltone()
-settings.development_mode = True
+
+settings.development_mode = False
+settings.rendering = True
 settings.GAME = "load"
 settings.BoardSize = 2
 settings.FEN = dict()
@@ -19,5 +19,5 @@ settings.EFEN = dict(
     NUCLEUS = dict(),
     PIECES = dict()
 )
-settings.active_player = WHITE
-settings.active_unit = None
+settings.active_player: str = None
+settings.active_unit: int = None
